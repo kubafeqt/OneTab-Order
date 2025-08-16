@@ -2,7 +2,7 @@
 
 **Orders OneTab (browser addon) tabs.**
 
-This tool organizes tabs exported from the OneTab browser extension.
+This tool help you to organize tabs exported from the OneTab browser extension.
 
 ## Features
 
