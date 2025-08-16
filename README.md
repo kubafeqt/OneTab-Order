@@ -1,6 +1,6 @@
 # OneTab Orderer
 
-### Very basic tool yet
+## Very basic tool yet
 
 **Orders OneTab (browser addon) tabs.**
 
