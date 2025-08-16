@@ -1,10 +1,10 @@
 # OneTab Orderer
 
-## Very basic tool yet
-
 **Orders OneTab (browser addon) tabs.**
 
 This tool help you to organize tabs exported from the OneTab browser extension.
+
+### Very basic tool yet
 
 ## Features
 
