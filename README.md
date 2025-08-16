@@ -17,3 +17,6 @@ This tool help you to organize tabs exported from the OneTab browser extension.
 2. Use the `Order` button to sort tabs, remove duplicates, and group by domain.
 3. Optionally, delete all your saved tabs in OneTab.
 4. Copy all text from the RichTextBox and paste it to import back into OneTab.
+
+
+## Very basic tool yet. ##
