@@ -4,7 +4,7 @@
 
 This tool help you to organize tabs exported from the OneTab browser extension.
 
-### Very basic tool yet
+### Very basic tool yet.
 
 ## Features
 
