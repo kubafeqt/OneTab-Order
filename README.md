@@ -1,5 +1,7 @@
 # OneTab Orderer
 
+## Very basic tool yet. ##
+
 **Orders OneTab (browser addon) tabs.**
 
 This tool help you to organize tabs exported from the OneTab browser extension.
@@ -19,4 +21,4 @@ This tool help you to organize tabs exported from the OneTab browser extension.
 4. Copy all text from the RichTextBox and paste it to import back into OneTab.
 
 
-## Very basic tool yet. ##
+
