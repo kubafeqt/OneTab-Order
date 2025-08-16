@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36408.4 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneTab-Order", "OneTab-Order\OneTab-Order.csproj", "{4DB54436-5CFD-4090-97E0-E398B6089D1F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4DB54436-5CFD-4090-97E0-E398B6089D1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DB54436-5CFD-4090-97E0-E398B6089D1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DB54436-5CFD-4090-97E0-E398B6089D1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DB54436-5CFD-4090-97E0-E398B6089D1F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6A86B4A5-8CF7-40BF-8287-461EFA000780}
+	EndGlobalSection
+EndGlobal
