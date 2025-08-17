@@ -31,6 +31,7 @@
          rtbText = new RichTextBox();
          btnOrder = new Button();
          lbRemovedDuplicates = new Label();
+         btnCopyAllRtb = new Button();
          SuspendLayout();
          // 
          // rtbText
@@ -56,17 +57,30 @@
          // 
          lbRemovedDuplicates.AutoSize = true;
          lbRemovedDuplicates.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbRemovedDuplicates.Location = new Point(238, 35);
+         lbRemovedDuplicates.Location = new Point(347, 35);
          lbRemovedDuplicates.Name = "lbRemovedDuplicates";
          lbRemovedDuplicates.Size = new Size(167, 21);
          lbRemovedDuplicates.TabIndex = 2;
          lbRemovedDuplicates.Text = "Removed duplicates: ";
+         // 
+         // btnCopyAllRtb
+         // 
+         btnCopyAllRtb.Enabled = false;
+         btnCopyAllRtb.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         btnCopyAllRtb.Location = new Point(142, 30);
+         btnCopyAllRtb.Name = "btnCopyAllRtb";
+         btnCopyAllRtb.Size = new Size(85, 33);
+         btnCopyAllRtb.TabIndex = 3;
+         btnCopyAllRtb.Text = "copy text";
+         btnCopyAllRtb.UseVisualStyleBackColor = true;
+         btnCopyAllRtb.Click += btnCopyAllRtb_Click;
          // 
          // Form1
          // 
          AutoScaleDimensions = new SizeF(7F, 15F);
          AutoScaleMode = AutoScaleMode.Font;
          ClientSize = new Size(1156, 754);
+         Controls.Add(btnCopyAllRtb);
          Controls.Add(lbRemovedDuplicates);
          Controls.Add(btnOrder);
          Controls.Add(rtbText);
@@ -83,5 +97,6 @@
       private RichTextBox rtbText;
       private Button btnOrder;
       private Label lbRemovedDuplicates;
+      private Button btnCopyAllRtb;
    }
 }

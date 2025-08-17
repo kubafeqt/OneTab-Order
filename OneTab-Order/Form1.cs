@@ -2,16 +2,20 @@ namespace OneTab_Order
 {
    public partial class Form1 : Form
    {
+      System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
       public Form1()
       {
          InitializeComponent();
+         timer.Interval = 100; //100 ms
+         timer.Tick += Timer_Tick;
+         timer.Start();
       }
 
       private void btnOrder_Click(object sender, EventArgs e)
       {
          OrderTabs();
       }
-      
+
       private void OrderTabs()
       {
          Tabs.AddTabs(rtbText.Text);
@@ -32,5 +36,33 @@ namespace OneTab_Order
 
          lbRemovedDuplicates.Text = $"Removed duplicates: {Tabs.RemovedDuplicates}";
       }
+
+      string textToCopy = string.Empty;
+      private void btnCopyAllRtb_Click(object sender, EventArgs e)
+      {
+         textToCopy = rtbText.Text;
+         Clipboard.SetText(textToCopy);
+         SwitchButtonEnabled(btnCopyAllRtb, false);
+      }
+
+      private void Timer_Tick(object sender, EventArgs e)
+      {
+         if (Clipboard.ContainsText())
+         {
+            string textToCopy = Clipboard.GetText().Trim();
+            if (rtbText.Text != textToCopy && !string.IsNullOrWhiteSpace(textToCopy))
+            {
+               SwitchButtonEnabled(btnCopyAllRtb, true);
+            }
+            else
+            {
+               SwitchButtonEnabled(btnCopyAllRtb, false);
+            }
+         }
+      }
+
+      private void SwitchButtonEnabled(Button button, bool enable) => button.Enabled = enable;
+
+
    }
 }
