@@ -15,7 +15,6 @@ namespace OneTab_Order
 
       public string Url { get; set; }
       public string Description { get; set; }
-
       public Tabs(string url, string description)
       {
          Url = url;
@@ -25,12 +24,11 @@ namespace OneTab_Order
 
       public static void AddTabs(string content)
       {
-         // Split the content by new lines to get individual tab entries
-         var lines = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+         var lines = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries); //Split the content by new lines to get individual tab entries
          foreach (var line in lines)
          {
-            // Split each line by the first occurrence of a space to separate URL and description
-            var parts = line.Split(new[] { '|' }, 2);
+
+            var parts = line.Split(new[] { '|' }, 2); //Split each line by the first occurrence of a space to separate URL and description
             if (parts.Length == 2)
             {
                string url = parts[0].Trim();
@@ -40,11 +38,8 @@ namespace OneTab_Order
          }
       }
 
-      public static void OrderTabs()
-      {
-         TabList = TabList.OrderByDescending(tab => tab.Url).ThenBy(tab => tab.Description).ToList();
-         //TabList = (from tab in TabList orderby tab.Url descending, tab.Description ascending select tab).ToList();
-      }
+      public static void OrderTabs() => TabList = TabList.OrderByDescending(tab => tab.Url).ThenBy(tab => tab.Description).ToList();
+      //TabList = (from tab in TabList orderby tab.Url descending, tab.Description ascending select tab).ToList();
 
       public static void RemoveDuplicates() //seskupí Tab podle Url a vezme vždy jen první z každé skupiny
       {
@@ -55,6 +50,8 @@ namespace OneTab_Order
          RemovedDuplicates = TabList.Count - distinctTabs.Count;
          TabList = distinctTabs;
       }
+
+      public static IEnumerable<IGrouping<string, Tabs>> GroupTabs() => TabList.GroupBy(t => new Uri(t.Url).Host);
 
    }
 }

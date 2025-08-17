@@ -47,7 +47,7 @@
          btnOrder.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
          btnOrder.Location = new Point(36, 30);
          btnOrder.Name = "btnOrder";
-         btnOrder.Size = new Size(85, 33);
+         btnOrder.Size = new Size(85, 35);
          btnOrder.TabIndex = 1;
          btnOrder.Text = "order";
          btnOrder.UseVisualStyleBackColor = true;
@@ -57,9 +57,9 @@
          // 
          lbRemovedDuplicates.AutoSize = true;
          lbRemovedDuplicates.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbRemovedDuplicates.Location = new Point(347, 35);
+         lbRemovedDuplicates.Location = new Point(347, 36);
          lbRemovedDuplicates.Name = "lbRemovedDuplicates";
-         lbRemovedDuplicates.Size = new Size(167, 21);
+         lbRemovedDuplicates.Size = new Size(174, 23);
          lbRemovedDuplicates.TabIndex = 2;
          lbRemovedDuplicates.Text = "Removed duplicates: ";
          // 
@@ -69,7 +69,7 @@
          btnCopyAllRtb.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
          btnCopyAllRtb.Location = new Point(142, 30);
          btnCopyAllRtb.Name = "btnCopyAllRtb";
-         btnCopyAllRtb.Size = new Size(85, 33);
+         btnCopyAllRtb.Size = new Size(94, 35);
          btnCopyAllRtb.TabIndex = 3;
          btnCopyAllRtb.Text = "copy text";
          btnCopyAllRtb.UseVisualStyleBackColor = true;

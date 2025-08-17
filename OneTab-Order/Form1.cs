@@ -1,4 +1,4 @@
-namespace OneTab_Order
+﻿namespace OneTab_Order
 {
    public partial class Form1 : Form
    {
@@ -23,25 +23,21 @@ namespace OneTab_Order
          Tabs.RemoveDuplicates();
          rtbText.Clear();
 
-         var groupedTabs = Tabs.TabList
-    .GroupBy(t => new Uri(t.Url).Host);
-         foreach (var group in groupedTabs)
+         foreach (var group in Tabs.GroupTabs()) //zavolá se pouze jednou, na začátku foreach
          {
             foreach (var tab in group)
             {
                rtbText.AppendText($"{tab.Url} | {tab.Description}\n");
             }
-            rtbText.AppendText("\n");// mezera mezi skupinami
+            rtbText.AppendText("\n"); //mezera mezi skupinami
          }
 
          lbRemovedDuplicates.Text = $"Removed duplicates: {Tabs.RemovedDuplicates}";
       }
 
-      string textToCopy = string.Empty;
       private void btnCopyAllRtb_Click(object sender, EventArgs e)
       {
-         textToCopy = rtbText.Text;
-         Clipboard.SetText(textToCopy);
+         Clipboard.SetText(rtbText.Text);
          SwitchButtonEnabled(btnCopyAllRtb, false);
       }
 
@@ -49,8 +45,8 @@ namespace OneTab_Order
       {
          if (Clipboard.ContainsText())
          {
-            string textToCopy = Clipboard.GetText().Trim();
-            if (rtbText.Text != textToCopy && !string.IsNullOrWhiteSpace(textToCopy))
+            string clipboarText = Clipboard.GetText().Trim();
+            if (rtbText.Text != clipboarText && !string.IsNullOrWhiteSpace(clipboarText))
             {
                SwitchButtonEnabled(btnCopyAllRtb, true);
             }
