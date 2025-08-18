@@ -43,10 +43,7 @@ namespace OneTab_Order
 
       public static void RemoveDuplicates() //seskupí Tab podle Url a vezme vždy jen první z každé skupiny
       {
-         var distinctTabs = TabList
-             .GroupBy(tab => tab.Url)
-             .Select(x => x.First())
-             .ToList();
+         var distinctTabs = TabList.GroupBy(tab => tab.Url).Select(x => x.First()).ToList();
          RemovedDuplicates = TabList.Count - distinctTabs.Count;
          TabList = distinctTabs;
       }
