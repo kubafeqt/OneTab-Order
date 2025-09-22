@@ -1,5 +1,12 @@
 ﻿using System.DirectoryServices.ActiveDirectory;
 
+#region comments
+
+//check for installed -> notepad++, pspad, ... , or notepad
+//can be extracted to txt, html with <a href=""> (+list for copy)
+
+#endregion
+
 namespace OneTab_Order
 {
    public partial class Form1 : Form
@@ -14,8 +21,6 @@ namespace OneTab_Order
          cmbRemoveDuplicatesExtractedType.Items.AddRange(new string[] { "from below", "from up" });
          cmbRemoveDuplicatesExtractedType.SelectedIndex = 0;
          cmbRemoveDuplicatesExtractedType.Enabled = cboxRemoveDuplicatesExtracted.Checked;
-         //check for installed -> notepad++, pspad, ... , or notepad
-         //can be extracted to txt, html with <a href=""> (+list for copy)
          cboxRemoveDuplicatesFromUp.CheckedChanged += CboxDef_CheckedChanged;
          cboxRemoveDuplicatesFromBelow.CheckedChanged += CboxDef_CheckedChanged;
       }
