@@ -34,7 +34,7 @@
          btnCopyAllRtb = new Button();
          cboxRemoveDuplicatesFromUp = new CheckBox();
          cboxRemoveDuplicatesFromBelow = new CheckBox();
-         textBox1 = new TextBox();
+         tbExtractWebpages = new TextBox();
          label1 = new Label();
          cboxRemoveDuplicatesExtracted = new CheckBox();
          cmbRemoveDuplicatesExtractedType = new ComboBox();
@@ -107,12 +107,12 @@
          cboxRemoveDuplicatesFromBelow.Text = "remove duplicates from below";
          cboxRemoveDuplicatesFromBelow.UseVisualStyleBackColor = true;
          // 
-         // textBox1
+         // tbExtractWebpages
          // 
-         textBox1.Location = new Point(548, 37);
-         textBox1.Name = "textBox1";
-         textBox1.Size = new Size(734, 23);
-         textBox1.TabIndex = 7;
+         tbExtractWebpages.Location = new Point(548, 37);
+         tbExtractWebpages.Name = "tbExtractWebpages";
+         tbExtractWebpages.Size = new Size(734, 23);
+         tbExtractWebpages.TabIndex = 7;
          // 
          // label1
          // 
@@ -153,7 +153,7 @@
          cboxOpenExtractedFile.Checked = true;
          cboxOpenExtractedFile.CheckState = CheckState.Checked;
          cboxOpenExtractedFile.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         cboxOpenExtractedFile.Location = new Point(1112, 64);
+         cboxOpenExtractedFile.Location = new Point(1112, 65);
          cboxOpenExtractedFile.Name = "cboxOpenExtractedFile";
          cboxOpenExtractedFile.Size = new Size(156, 23);
          cboxOpenExtractedFile.TabIndex = 11;
@@ -208,7 +208,7 @@
          Controls.Add(cmbRemoveDuplicatesExtractedType);
          Controls.Add(cboxRemoveDuplicatesExtracted);
          Controls.Add(label1);
-         Controls.Add(textBox1);
+         Controls.Add(tbExtractWebpages);
          Controls.Add(cboxRemoveDuplicatesFromBelow);
          Controls.Add(cboxRemoveDuplicatesFromUp);
          Controls.Add(btnCopyAllRtb);
@@ -232,7 +232,7 @@
       private Button btnCopyAllRtb;
       private CheckBox cboxRemoveDuplicatesFromUp;
       private CheckBox cboxRemoveDuplicatesFromBelow;
-      private TextBox textBox1;
+      private TextBox tbExtractWebpages;
       private Label label1;
       private CheckBox cboxRemoveDuplicatesExtracted;
       private ComboBox cmbRemoveDuplicatesExtractedType;

@@ -126,7 +126,49 @@ namespace OneTab_Order
 
       private void btnExtractWebpages_Click(object sender, EventArgs e)
       {
+         string[] webpagesUrls = tbExtractWebpages.Text.Trim().Split(';', StringSplitOptions.RemoveEmptyEntries) // rozdělí podle středníku a odstraní prázdné položky
+                                                             .Select(url => url.Trim()) // ořízne mezery kolem každé položky
+                                                             .Where(url => !string.IsNullOrEmpty(url) && url.Length > 1) // jistota, že nejsou prázdné řetězce po oříznutí
+                                                             .Distinct() // odstraní duplicity
+                                                             .ToArray(); // převede na pole
 
+         var selectedTabs = Tabs.TabList.Where(tab => !string.IsNullOrWhiteSpace(tab.Url) 
+                                                         && webpagesUrls.Any(url => tab.Url.Contains(url, StringComparison.OrdinalIgnoreCase))).ToList();
+
+         // 3. Sestavení obsahu k uložení (například řádek = url)
+         var lines = selectedTabs.Select(tab => tab.Url).ToList();
+
+         // 4. Uložení do souboru (např. jako TXT)
+         var saveFileDialog = new SaveFileDialog();
+         saveFileDialog.Filter = "Textové soubory (*.txt)|*.txt|Všechny soubory (*.*)|*.*";
+         saveFileDialog.Title = "Uložit extrahované weby";
+         string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "exports");
+         if (!Directory.Exists(folderPath))
+         {
+            Directory.CreateDirectory(folderPath);
+         }
+         saveFileDialog.InitialDirectory = folderPath;
+         if (saveFileDialog.ShowDialog() == DialogResult.OK)
+         {
+            File.WriteAllLines(saveFileDialog.FileName, lines);
+            MessageBox.Show("Soubor byl úspěšně uložen.", "Hotovo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            if (cboxRemoveSitesFromDef.Checked)
+            {
+               // Odeber vyexportované URL z rtbText
+               // Rozděl text do pole řádek po řádku
+               var allLines = rtbText.Text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
+                                          .Select(row => row.Trim())
+                                          .Where(row => !string.IsNullOrEmpty(row))
+                                          .ToList();
+
+               // Smaž ty řádky, které jsou mezi vyexportovanými URL (ignoruje diakritiku a porovnává trimmed)
+               var remainingLines = allLines.Where(row => !lines.Contains(row)).ToList();
+
+               // Přepiš rtbText.Text jen zbytkem
+               rtbText.Text = string.Join(Environment.NewLine, remainingLines);
+            }
+         }
       }
 
       private void Form1_Paint(object sender, PaintEventArgs e)
@@ -141,6 +183,6 @@ namespace OneTab_Order
          btnOrder.Text = cboxRemoveDuplicatesOnly.Checked ? "remove" : "order";
       }
 
-     
+
    }
 }
