@@ -35,20 +35,21 @@
          cboxRemoveDuplicatesFromUp = new CheckBox();
          cboxRemoveDuplicatesFromBelow = new CheckBox();
          tbExtractWebpages = new TextBox();
-         label1 = new Label();
+         lbExtractedWebpages = new Label();
          cboxRemoveDuplicatesExtracted = new CheckBox();
          cmbRemoveDuplicatesExtractedType = new ComboBox();
          cboxOpenExtractedFile = new CheckBox();
          btnExtractWebpages = new Button();
          cboxRemoveDuplicatesOnly = new CheckBox();
          cboxRemoveSitesFromDef = new CheckBox();
+         btnOpenExtractedFolder = new Button();
          SuspendLayout();
          // 
          // rtbText
          // 
          rtbText.Location = new Point(22, 92);
          rtbText.Name = "rtbText";
-         rtbText.Size = new Size(1260, 650);
+         rtbText.Size = new Size(1071, 650);
          rtbText.TabIndex = 0;
          rtbText.Text = "";
          // 
@@ -114,15 +115,15 @@
          tbExtractWebpages.Size = new Size(734, 23);
          tbExtractWebpages.TabIndex = 7;
          // 
-         // label1
+         // lbExtractedWebpages
          // 
-         label1.AutoSize = true;
-         label1.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         label1.Location = new Point(548, 10);
-         label1.Name = "label1";
-         label1.Size = new Size(143, 21);
-         label1.TabIndex = 8;
-         label1.Text = "Extract webpages:";
+         lbExtractedWebpages.AutoSize = true;
+         lbExtractedWebpages.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         lbExtractedWebpages.Location = new Point(548, 10);
+         lbExtractedWebpages.Name = "lbExtractedWebpages";
+         lbExtractedWebpages.Size = new Size(143, 21);
+         lbExtractedWebpages.TabIndex = 8;
+         lbExtractedWebpages.Text = "Extract webpages:";
          // 
          // cboxRemoveDuplicatesExtracted
          // 
@@ -196,18 +197,30 @@
          cboxRemoveSitesFromDef.Text = "Remove Sites From Default";
          cboxRemoveSitesFromDef.UseVisualStyleBackColor = true;
          // 
+         // btnOpenExtractedFolder
+         // 
+         btnOpenExtractedFolder.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         btnOpenExtractedFolder.Location = new Point(1112, 94);
+         btnOpenExtractedFolder.Name = "btnOpenExtractedFolder";
+         btnOpenExtractedFolder.Size = new Size(167, 26);
+         btnOpenExtractedFolder.TabIndex = 15;
+         btnOpenExtractedFolder.Text = "Open Extracted Folder";
+         btnOpenExtractedFolder.UseVisualStyleBackColor = true;
+         btnOpenExtractedFolder.Click += btnOpenExtractedFolder_Click;
+         // 
          // Form1
          // 
          AutoScaleDimensions = new SizeF(7F, 15F);
          AutoScaleMode = AutoScaleMode.Font;
          ClientSize = new Size(1303, 754);
+         Controls.Add(btnOpenExtractedFolder);
          Controls.Add(cboxRemoveSitesFromDef);
          Controls.Add(cboxRemoveDuplicatesOnly);
          Controls.Add(btnExtractWebpages);
          Controls.Add(cboxOpenExtractedFile);
          Controls.Add(cmbRemoveDuplicatesExtractedType);
          Controls.Add(cboxRemoveDuplicatesExtracted);
-         Controls.Add(label1);
+         Controls.Add(lbExtractedWebpages);
          Controls.Add(tbExtractWebpages);
          Controls.Add(cboxRemoveDuplicatesFromBelow);
          Controls.Add(cboxRemoveDuplicatesFromUp);
@@ -233,12 +246,13 @@
       private CheckBox cboxRemoveDuplicatesFromUp;
       private CheckBox cboxRemoveDuplicatesFromBelow;
       private TextBox tbExtractWebpages;
-      private Label label1;
+      private Label lbExtractedWebpages;
       private CheckBox cboxRemoveDuplicatesExtracted;
       private ComboBox cmbRemoveDuplicatesExtractedType;
       private CheckBox cboxOpenExtractedFile;
       private Button btnExtractWebpages;
       private CheckBox cboxRemoveDuplicatesOnly;
       private CheckBox cboxRemoveSitesFromDef;
+      private Button btnOpenExtractedFolder;
    }
 }

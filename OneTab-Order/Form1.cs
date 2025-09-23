@@ -1,9 +1,14 @@
-﻿using System.DirectoryServices.ActiveDirectory;
+﻿using System.Diagnostics;
+using System.DirectoryServices.ActiveDirectory;
 
 #region comments
 
 //check for installed -> notepad++, pspad, ... , or notepad
 //can be extracted to txt, html with <a href=""> (+list for copy)
+//delete all from and after - &/?pp=, &/?utm, &/?fbclid, - check other tracking queries -> delete tracking queries checkbox
+//remove duplicates from extracted, even in rtbText
+//ctrl+f - hledání - builded in
+//
 
 #endregion
 
@@ -126,27 +131,54 @@ namespace OneTab_Order
 
       private void btnExtractWebpages_Click(object sender, EventArgs e)
       {
-         string[] webpagesUrls = tbExtractWebpages.Text.Trim().Split(';', StringSplitOptions.RemoveEmptyEntries) // rozdělí podle středníku a odstraní prázdné položky
-                                                             .Select(url => url.Trim()) // ořízne mezery kolem každé položky
-                                                             .Where(url => !string.IsNullOrEmpty(url) && url.Length > 1) // jistota, že nejsou prázdné řetězce po oříznutí
-                                                             .Distinct() // odstraní duplicity
-                                                             .ToArray(); // převede na pole
+         bool notRemoveEmptyEntries = true;
+         Tabs.TabList.Clear(); // důležité
+         Tabs.AddTabs(rtbText.Text, notRemoveEmptyEntries);
 
-         var selectedTabs = Tabs.TabList.Where(tab => !string.IsNullOrWhiteSpace(tab.Url) 
-                                                         && webpagesUrls.Any(url => tab.Url.Contains(url, StringComparison.OrdinalIgnoreCase))).ToList();
+         string[] webpagesUrls = tbExtractWebpages.Text.Trim()
+             .Split(';', StringSplitOptions.RemoveEmptyEntries)
+             .Select(url => url.Trim())
+             .Where(url => !string.IsNullOrEmpty(url) && url.Length > 1)
+             .Distinct()
+             .ToArray();
 
-         // 3. Sestavení obsahu k uložení (například řádek = url)
-         var lines = selectedTabs.Select(tab => tab.Url).ToList();
+         // Sestavení bloků podle jednotlivých typů extrakce (každý typ = jedna položka z webpagesUrls)
+         var linesByType = webpagesUrls
+             .Select(url =>
+                 Tabs.TabList
+                     .Where(tab => !string.IsNullOrWhiteSpace(tab.Url) && tab.Url.Contains(url, StringComparison.OrdinalIgnoreCase))
+                     .OrderBy(tab => tab.Url)
+                     .Select(tab => string.IsNullOrWhiteSpace(tab.Description) ? tab.Url : $"{tab.Url} | {tab.Description}")
+                     .ToList()
+             )
+             .Where(list => list.Count > 0)
+             .ToList();
 
-         // 4. Uložení do souboru (např. jako TXT)
+         // Sestavení výsledných řádků: mezi bloky prázdný řádek
+         var lines = linesByType.SelectMany((block, i) =>
+             i == 0 ? block : new[] { "" }.Concat(block)
+         ).ToList();
+
+         if (cboxRemoveDuplicatesExtracted.Checked)
+         {
+            // Použijeme naši novou metodu
+            var removeMode = cmbRemoveDuplicatesExtractedType.SelectedItem.ToString().Equals("from below")
+                      ? ExtractHelper.DuplicateRemoveMode.KeepFirst
+                      : ExtractHelper.DuplicateRemoveMode.KeepLast;
+            var result = ExtractHelper.RemoveDuplicatesFromLines(lines, removeMode);
+            lines = result.lines;
+            lbRemovedDuplicates.Text = $"Removed duplicates: {result.removedCount}";
+         }
+         else
+         {
+            lbRemovedDuplicates.Text = $"Removed duplicates: 0";
+         }
+
+         // Uložení do souboru
          var saveFileDialog = new SaveFileDialog();
          saveFileDialog.Filter = "Textové soubory (*.txt)|*.txt|Všechny soubory (*.*)|*.*";
          saveFileDialog.Title = "Uložit extrahované weby";
-         string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "exports");
-         if (!Directory.Exists(folderPath))
-         {
-            Directory.CreateDirectory(folderPath);
-         }
+         string folderPath = MakeExportsPath();
          saveFileDialog.InitialDirectory = folderPath;
          if (saveFileDialog.ShowDialog() == DialogResult.OK)
          {
@@ -155,18 +187,54 @@ namespace OneTab_Order
 
             if (cboxRemoveSitesFromDef.Checked)
             {
-               // Odeber vyexportované URL z rtbText
-               // Rozděl text do pole řádek po řádku
                var allLines = rtbText.Text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
-                                          .Select(row => row.Trim())
-                                          .Where(row => !string.IsNullOrEmpty(row))
-                                          .ToList();
+                               .Select(row => row.TrimEnd())
+                               .ToList();
 
-               // Smaž ty řádky, které jsou mezi vyexportovanými URL (ignoruje diakritiku a porovnává trimmed)
-               var remainingLines = allLines.Where(row => !lines.Contains(row)).ToList();
+               // Odeber všechny řádky, které obsahují některou z webových adres (ignoruje velikost písmen)
+               var remainingLines = allLines.Where(row =>
+                   string.IsNullOrWhiteSpace(row) ||
+                   !webpagesUrls.Any(url => row.IndexOf(url, StringComparison.OrdinalIgnoreCase) >= 0)
+               ).ToList();
 
-               // Přepiš rtbText.Text jen zbytkem
                rtbText.Text = string.Join(Environment.NewLine, remainingLines);
+
+               // Odeber vyexportované URL z rtbText, prázdné řádky zůstanou
+               //var allLines = rtbText.Text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
+               //                           .Select(row => row.TrimEnd())
+               //                           .ToList();
+
+               //var comparer = StringComparer.InvariantCultureIgnoreCase;
+               //var urlSet = new HashSet<string>(
+               //    Tabs.TabList
+               //        .Where(tab => !string.IsNullOrWhiteSpace(tab.Url) &&
+               //                      webpagesUrls.Any(url => tab.Url.Contains(url, StringComparison.OrdinalIgnoreCase)))
+               //        .Select(tab => tab.Url.Trim()),
+               //    comparer
+               //);
+
+               //var remainingLines = allLines.Where(row =>
+               //    string.IsNullOrWhiteSpace(row) || !urlSet.Contains(row.Trim())
+               //).ToList();
+
+               //rtbText.Text = string.Join(Environment.NewLine, remainingLines);
+            }
+            lbExtractedWebpages.Text = $"Extracted webpages: {lines.Count(line => !string.IsNullOrWhiteSpace(line))}";
+
+            if (cboxOpenExtractedFile.Checked)
+            {
+               try
+               {
+                  System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                  {
+                     FileName = saveFileDialog.FileName,
+                     UseShellExecute = true
+                  });
+               }
+               catch (Exception ex)
+               {
+                  MessageBox.Show($"Nepodařilo se otevřít soubor: {ex.Message}", "Chyba", MessageBoxButtons.OK, MessageBoxIcon.Error);
+               }
             }
          }
       }
@@ -183,6 +251,25 @@ namespace OneTab_Order
          btnOrder.Text = cboxRemoveDuplicatesOnly.Checked ? "remove" : "order";
       }
 
+      private void btnOpenExtractedFolder_Click(object sender, EventArgs e)
+      {
+         string exportsPath = MakeExportsPath();
+         var psi = new ProcessStartInfo
+         {
+            FileName = exportsPath,
+            UseShellExecute = true
+         };
+         Process.Start(psi);
+      }
 
+      private string MakeExportsPath()
+      {
+         string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "exports");
+         if (!Directory.Exists(folderPath))
+         {
+            Directory.CreateDirectory(folderPath);
+         }
+         return folderPath;
+      }
    }
 }
