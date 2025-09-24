@@ -53,7 +53,7 @@
          // 
          // rtbText
          // 
-         rtbText.Font = new Font("Consolas", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
+         rtbText.Font = new Font("Consolas", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
          rtbText.Location = new Point(22, 92);
          rtbText.Name = "rtbText";
          rtbText.Size = new Size(1071, 650);

@@ -256,12 +256,27 @@ namespace OneTab_Order
       private int lastSearchPosition = 0;
       private void btnFindNext_Click(object sender, EventArgs e)
       {
-         string searchText = tbFind.Text;
+         Find();
+      }
 
+      private void btnFindPrev_Click(object sender, EventArgs e)
+      {
+         Find(false);
+      }
+
+      private void Find(bool next = true)
+      {
+         string searchText = tbFind.Text;
 
          if (string.IsNullOrEmpty(searchText))
             return;
+         
+         Action<string> Find = next ? FindNext : FindPrev; //override
+         Find(searchText);
+      }
 
+      private void FindNext(string searchText)
+      {
          int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
 
          if (index == -1 && lastSearchPosition > 0)
@@ -312,13 +327,8 @@ namespace OneTab_Order
          }
       }
 
-      private void btnFindPrev_Click(object sender, EventArgs e)
+      private void FindPrev(string searchText)
       {
-         string searchText = tbFind.Text;
-
-         if (string.IsNullOrEmpty(searchText))
-            return;
-
          // Najde všechny výskyty textu
          List<int> allPositions = new List<int>();
          int pos = 0;
@@ -398,7 +408,7 @@ namespace OneTab_Order
       {
          if (e.KeyCode == Keys.Enter)
          {
-            btnFindNext.PerformClick();
+            Find();
             //tbFind.Focus();
             e.SuppressKeyPress = true; //prevents bump sound
          }
@@ -410,15 +420,17 @@ namespace OneTab_Order
          {
             if (e.KeyCode == Keys.Enter)
             {
-               btnFindNext.PerformClick();
+               Find();
                e.SuppressKeyPress = true;
             }
-            //if (e.KeyCode == Keys.Up) //not working correctly
-            //{
-            //   btnFindPrev.PerformClick();
-            //   e.SuppressKeyPress = true;
-            //}
+            if (e.KeyCode == Keys.Up) //not working correctly
+            {
+               Find(false);
+               e.SuppressKeyPress = true;
+            }
          }
       }
+
+
    }
 }
