@@ -49,6 +49,10 @@
          lbFindBtn = new Label();
          cboxRemoveSitesFromDef = new CheckBox();
          cboxRemoveTrackingQueries = new CheckBox();
+         checkBox1 = new CheckBox();
+         lbExtracted = new Label();
+         cmbFindType = new ComboBox();
+         lbFindType = new Label();
          SuspendLayout();
          // 
          // rtbText
@@ -59,6 +63,7 @@
          rtbText.Size = new Size(1071, 650);
          rtbText.TabIndex = 0;
          rtbText.Text = "";
+         rtbText.TextChanged += rtbText_TextChanged;
          rtbText.KeyDown += rtbText_KeyDown;
          // 
          // btnOrder
@@ -195,7 +200,7 @@
          // btnOpenExtractedFolder
          // 
          btnOpenExtractedFolder.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         btnOpenExtractedFolder.Location = new Point(1109, 108);
+         btnOpenExtractedFolder.Location = new Point(1108, 105);
          btnOpenExtractedFolder.Name = "btnOpenExtractedFolder";
          btnOpenExtractedFolder.Size = new Size(167, 26);
          btnOpenExtractedFolder.TabIndex = 15;
@@ -205,7 +210,7 @@
          // 
          // tbFind
          // 
-         tbFind.Location = new Point(1105, 185);
+         tbFind.Location = new Point(1105, 232);
          tbFind.Name = "tbFind";
          tbFind.Size = new Size(186, 23);
          tbFind.TabIndex = 16;
@@ -215,7 +220,7 @@
          // 
          lbFind.AutoSize = true;
          lbFind.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbFind.Location = new Point(1099, 161);
+         lbFind.Location = new Point(1099, 208);
          lbFind.Name = "lbFind";
          lbFind.Size = new Size(45, 21);
          lbFind.TabIndex = 17;
@@ -224,7 +229,7 @@
          // btnFindPrev
          // 
          btnFindPrev.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         btnFindPrev.Location = new Point(1229, 214);
+         btnFindPrev.Location = new Point(1229, 261);
          btnFindPrev.Name = "btnFindPrev";
          btnFindPrev.Size = new Size(62, 26);
          btnFindPrev.TabIndex = 18;
@@ -235,7 +240,7 @@
          // btnFindNext
          // 
          btnFindNext.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         btnFindNext.Location = new Point(1161, 214);
+         btnFindNext.Location = new Point(1161, 261);
          btnFindNext.Name = "btnFindNext";
          btnFindNext.Size = new Size(62, 26);
          btnFindNext.TabIndex = 19;
@@ -247,7 +252,7 @@
          // 
          lbFindBtn.AutoSize = true;
          lbFindBtn.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbFindBtn.Location = new Point(1110, 216);
+         lbFindBtn.Location = new Point(1110, 263);
          lbFindBtn.Name = "lbFindBtn";
          lbFindBtn.Size = new Size(45, 21);
          lbFindBtn.TabIndex = 20;
@@ -279,11 +284,57 @@
          cboxRemoveTrackingQueries.Text = "remove tracking queries";
          cboxRemoveTrackingQueries.UseVisualStyleBackColor = true;
          // 
+         // checkBox1
+         // 
+         checkBox1.AutoSize = true;
+         checkBox1.Checked = true;
+         checkBox1.CheckState = CheckState.Checked;
+         checkBox1.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         checkBox1.Location = new Point(1103, 170);
+         checkBox1.Name = "checkBox1";
+         checkBox1.Size = new Size(192, 23);
+         checkBox1.TabIndex = 22;
+         checkBox1.Text = "remove tracking queries";
+         checkBox1.UseVisualStyleBackColor = true;
+         // 
+         // lbExtracted
+         // 
+         lbExtracted.AutoSize = true;
+         lbExtracted.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         lbExtracted.Location = new Point(1103, 146);
+         lbExtracted.Name = "lbExtracted";
+         lbExtracted.Size = new Size(83, 21);
+         lbExtracted.TabIndex = 23;
+         lbExtracted.Text = "Extracted:";
+         // 
+         // cmbFindType
+         // 
+         cmbFindType.DropDownStyle = ComboBoxStyle.DropDownList;
+         cmbFindType.FormattingEnabled = true;
+         cmbFindType.Location = new Point(1105, 324);
+         cmbFindType.Name = "cmbFindType";
+         cmbFindType.Size = new Size(186, 23);
+         cmbFindType.TabIndex = 24;
+         // 
+         // lbFindType
+         // 
+         lbFindType.AutoSize = true;
+         lbFindType.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         lbFindType.Location = new Point(1099, 296);
+         lbFindType.Name = "lbFindType";
+         lbFindType.Size = new Size(84, 21);
+         lbFindType.TabIndex = 25;
+         lbFindType.Text = "Find Type:";
+         // 
          // Form1
          // 
          AutoScaleDimensions = new SizeF(7F, 15F);
          AutoScaleMode = AutoScaleMode.Font;
          ClientSize = new Size(1303, 754);
+         Controls.Add(lbFindType);
+         Controls.Add(cmbFindType);
+         Controls.Add(lbExtracted);
+         Controls.Add(checkBox1);
          Controls.Add(cboxRemoveTrackingQueries);
          Controls.Add(lbFindBtn);
          Controls.Add(btnFindNext);
@@ -337,5 +388,9 @@
       private Label lbFindBtn;
       private CheckBox cboxRemoveSitesFromDef;
       private CheckBox cboxRemoveTrackingQueries;
+      private CheckBox checkBox1;
+      private Label lbExtracted;
+      private ComboBox cmbFindType;
+      private Label lbFindType;
    }
 }

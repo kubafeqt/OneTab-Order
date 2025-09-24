@@ -11,6 +11,8 @@ namespace OneTab_Order
    {
       public static List<Tabs> TabList = new List<Tabs>();
       public static int RemovedDuplicates = 0;
+      public static bool TabsAdded = false;
+      public static bool TabsChanged = false;
 
       public string Url { get; set; }
       public string Description { get; set; }
@@ -47,6 +49,7 @@ namespace OneTab_Order
                new Tabs(parts[0].Trim(), string.Empty);
             }
          }
+         TabsAdded = true;
       }
 
       public static void OrderTabs() => TabList = TabList.OrderByDescending(tab => tab.Url).ThenBy(tab => tab.Description).ToList();

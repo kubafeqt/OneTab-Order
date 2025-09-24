@@ -29,6 +29,16 @@ namespace OneTab_Order
          cmbRemoveDuplicatesExtractedType.Enabled = cboxRemoveDuplicatesExtracted.Checked;
          cboxRemoveDuplicatesFromUp.CheckedChanged += CboxDef_CheckedChanged;
          cboxRemoveDuplicatesFromBelow.CheckedChanged += CboxDef_CheckedChanged;
+
+         cmbFindType.Items.AddRange(new string[] { "full line", "url only", "content only" });
+         cmbFindType.SelectedIndex = 0;
+      }
+
+      private void ReAddTabs(ref bool notRemoveEmptyEntries)
+      {
+         notRemoveEmptyEntries = !notRemoveEmptyEntries ? cboxRemoveDuplicatesOnly.Checked : notRemoveEmptyEntries; //true = true
+         Tabs.TabList.Clear(); //důležitý
+         Tabs.AddTabs(rtbText.Text, notRemoveEmptyEntries);
       }
 
       private void btnOrder_Click(object sender, EventArgs e)
@@ -38,9 +48,9 @@ namespace OneTab_Order
 
       private void OrderTabs()
       {
-         bool notRemoveEmptyEntries = cboxRemoveDuplicatesOnly.Checked;
-         Tabs.TabList.Clear(); //důležitý
-         Tabs.AddTabs(rtbText.Text, notRemoveEmptyEntries);
+         bool notRemoveEmptyEntries = false;
+         ReAddTabs(ref notRemoveEmptyEntries);
+
          if (!cboxRemoveDuplicatesOnly.Checked)
          {
             Tabs.OrderTabs();
@@ -90,7 +100,7 @@ namespace OneTab_Order
 
       private void Timer_Tick(object sender, EventArgs e)
       {
-         if (Clipboard.ContainsText())
+         if (Clipboard.ContainsText()) //for button copy to clipboard enable/disable
          {
             string clipboarText = Clipboard.GetText().Trim();
             if (rtbText.Text != clipboarText && !string.IsNullOrWhiteSpace(clipboarText))
@@ -133,8 +143,7 @@ namespace OneTab_Order
       private void btnExtractWebpages_Click(object sender, EventArgs e)
       {
          bool notRemoveEmptyEntries = true;
-         Tabs.TabList.Clear(); // důležité
-         Tabs.AddTabs(rtbText.Text, notRemoveEmptyEntries);
+         ReAddTabs(ref notRemoveEmptyEntries);
 
          string[] webpagesUrls = tbExtractWebpages.Text.Trim()
              .Split(';', StringSplitOptions.RemoveEmptyEntries)
@@ -271,93 +280,125 @@ namespace OneTab_Order
 
          if (string.IsNullOrEmpty(searchText))
             return;
-         
+
          Action<string> Find = next ? FindNext : FindPrev; //override
          Find(searchText);
       }
 
       private void FindNext(string searchText)
       {
-         // Najde výskyt až ZA poslední pozicí
-         int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
-
-         if (index == -1 && lastSearchPosition > 0)
+         if (cmbFindType.SelectedItem.ToString() != "full line" && (!Tabs.TabsAdded || Tabs.TabsChanged))
          {
-            // Začít od začátku textu (cyklické hledání)
-            index = rtbText.Find(searchText, 0, RichTextBoxFinds.None);
+            bool notRemoveEmptyEntries = false;
+            ReAddTabs(ref notRemoveEmptyEntries);
          }
-
-         if (index != -1)
+         if (cmbFindType.SelectedItem.ToString() == "url only")
          {
-            // Najde začátek a konec logického řádku (jako dřív)
-            int lineStart = index;
-            int lineEnd = index;
 
-            while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
-               lineStart--;
-
-            while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
-               lineEnd++;
-
-            if (lineEnd < rtbText.Text.Length - 1 && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
-               lineEnd += 2;
-            else if (lineEnd < rtbText.Text.Length && (rtbText.Text[lineEnd] == '\r' || rtbText.Text[lineEnd] == '\n'))
-               lineEnd += 1;
-
-            rtbText.Select(lineStart, lineEnd - lineStart);
-            rtbText.ScrollToCaret();
-            rtbText.Focus();
-
-            // Nastaví lastSearchPosition na první znak ZA nalezeným textem
-            lastSearchPosition = index + searchText.Length;
          }
-         else
+         if (cmbFindType.SelectedItem.ToString() == "content only")
          {
-            MessageBox.Show("Text nebyl nalezen.");
-            lastSearchPosition = 0;
+
+         }
+         if (cmbFindType.SelectedItem.ToString() == "full line")
+         {
+            // Najde výskyt až za poslední pozicí
+            int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
+
+            if (index == -1 && lastSearchPosition > 0)
+            {
+               // Začít od začátku textu (cyklické hledání)
+               index = rtbText.Find(searchText, 0, RichTextBoxFinds.None);
+            }
+
+            if (index != -1)
+            {
+               // Najde začátek a konec logického řádku (jako dřív)
+               int lineStart = index;
+               int lineEnd = index;
+
+               while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
+                  lineStart--;
+
+               while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
+                  lineEnd++;
+
+               if (lineEnd < rtbText.Text.Length - 1 && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
+                  lineEnd += 2;
+               else if (lineEnd < rtbText.Text.Length && (rtbText.Text[lineEnd] == '\r' || rtbText.Text[lineEnd] == '\n'))
+                  lineEnd += 1;
+
+               rtbText.Select(lineStart, lineEnd - lineStart);
+               rtbText.ScrollToCaret();
+               rtbText.Focus();
+
+               // Nastaví lastSearchPosition na první znak za nalezeným textem
+               lastSearchPosition = index + searchText.Length;
+            }
+            else
+            {
+               MessageBox.Show("Text nebyl nalezen.");
+               lastSearchPosition = 0;
+            }
          }
       }
 
       private void FindPrev(string searchText)
       {
-         // Reset pozice při změně hledaného textu
-         if (searchText != lastSearchText)
+         if (cmbFindType.SelectedItem.ToString() != "full line" && (!Tabs.TabsAdded || Tabs.TabsChanged))
          {
-            lastSearchText = searchText;
-            lastSearchPosition = rtbText.TextLength;
+            bool notRemoveEmptyEntries = false;
+            ReAddTabs(ref notRemoveEmptyEntries);
          }
-
-         // Najdi předchozí výskyt (od pozice před current lastSearchPosition)
-         int start = Math.Max(0, lastSearchPosition - 1);
-         int index = rtbText.Find(searchText, 0, start, RichTextBoxFinds.Reverse);
-
-         if (index != -1)
+         if (cmbFindType.SelectedItem.ToString() == "url only")
          {
-            // Najdi začátek a konec logického řádku (jako dříve)
-            int lineStart = index;
-            int lineEnd = index;
 
-            while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
-               lineStart--;
-
-            while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
-               lineEnd++;
-
-            if (lineEnd < rtbText.Text.Length - 1 && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
-               lineEnd += 2;
-            else if (lineEnd < rtbText.Text.Length && (rtbText.Text[lineEnd] == '\r' || rtbText.Text[lineEnd] == '\n'))
-               lineEnd += 1;
-
-            rtbText.Select(lineStart, lineEnd - lineStart);
-            rtbText.ScrollToCaret();
-            rtbText.Focus();
-
-            lastSearchPosition = index;
          }
-         else
+         if (cmbFindType.SelectedItem.ToString() == "content only")
          {
-            MessageBox.Show("Text nebyl nalezen.");
-            lastSearchPosition = rtbText.TextLength;
+
+         }
+         if (cmbFindType.SelectedItem.ToString() == "full line")
+         {
+            // Reset pozice při změně hledaného textu
+            if (searchText != lastSearchText)
+            {
+               lastSearchText = searchText;
+               lastSearchPosition = rtbText.TextLength;
+            }
+
+            // Najdi předchozí výskyt (od pozice před current lastSearchPosition)
+            int start = Math.Max(0, lastSearchPosition - 1);
+            int index = rtbText.Find(searchText, 0, start, RichTextBoxFinds.Reverse);
+
+            if (index != -1)
+            {
+               // Najdi začátek a konec logického řádku (jako dříve)
+               int lineStart = index;
+               int lineEnd = index;
+
+               while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
+                  lineStart--;
+
+               while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
+                  lineEnd++;
+
+               if (lineEnd < rtbText.Text.Length - 1 && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
+                  lineEnd += 2;
+               else if (lineEnd < rtbText.Text.Length && (rtbText.Text[lineEnd] == '\r' || rtbText.Text[lineEnd] == '\n'))
+                  lineEnd += 1;
+
+               rtbText.Select(lineStart, lineEnd - lineStart);
+               rtbText.ScrollToCaret();
+               rtbText.Focus();
+
+               lastSearchPosition = index;
+            }
+            else
+            {
+               MessageBox.Show("Text nebyl nalezen.");
+               lastSearchPosition = rtbText.TextLength;
+            }
          }
       }
 
@@ -366,7 +407,6 @@ namespace OneTab_Order
          if (e.KeyCode == Keys.Enter)
          {
             Find();
-            //tbFind.Focus();
             e.SuppressKeyPress = true; //prevents bump sound
          }
       }
@@ -388,6 +428,9 @@ namespace OneTab_Order
          }
       }
 
-
+      private void rtbText_TextChanged(object sender, EventArgs e)
+      {
+         Tabs.TabsChanged = true;
+      }
    }
 }
