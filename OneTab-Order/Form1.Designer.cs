@@ -41,17 +41,25 @@
          cboxOpenExtractedFile = new CheckBox();
          btnExtractWebpages = new Button();
          cboxRemoveDuplicatesOnly = new CheckBox();
-         cboxRemoveSitesFromDef = new CheckBox();
          btnOpenExtractedFolder = new Button();
+         tbFind = new TextBox();
+         lbFind = new Label();
+         btnFindPrev = new Button();
+         btnFindNext = new Button();
+         lbFindBtn = new Label();
+         cboxRemoveSitesFromDef = new CheckBox();
+         cboxRemoveTrackingQueries = new CheckBox();
          SuspendLayout();
          // 
          // rtbText
          // 
+         rtbText.Font = new Font("Consolas", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
          rtbText.Location = new Point(22, 92);
          rtbText.Name = "rtbText";
          rtbText.Size = new Size(1071, 650);
          rtbText.TabIndex = 0;
          rtbText.Text = "";
+         rtbText.KeyDown += rtbText_KeyDown;
          // 
          // btnOrder
          // 
@@ -164,7 +172,7 @@
          // btnExtractWebpages
          // 
          btnExtractWebpages.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         btnExtractWebpages.Location = new Point(1211, 8);
+         btnExtractWebpages.Location = new Point(1211, 6);
          btnExtractWebpages.Name = "btnExtractWebpages";
          btnExtractWebpages.Size = new Size(68, 26);
          btnExtractWebpages.TabIndex = 12;
@@ -184,6 +192,67 @@
          cboxRemoveDuplicatesOnly.UseVisualStyleBackColor = true;
          cboxRemoveDuplicatesOnly.CheckedChanged += cboxRemoveDuplicatesOnly_CheckedChanged;
          // 
+         // btnOpenExtractedFolder
+         // 
+         btnOpenExtractedFolder.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         btnOpenExtractedFolder.Location = new Point(1109, 108);
+         btnOpenExtractedFolder.Name = "btnOpenExtractedFolder";
+         btnOpenExtractedFolder.Size = new Size(167, 26);
+         btnOpenExtractedFolder.TabIndex = 15;
+         btnOpenExtractedFolder.Text = "Open Extracted Folder";
+         btnOpenExtractedFolder.UseVisualStyleBackColor = true;
+         btnOpenExtractedFolder.Click += btnOpenExtractedFolder_Click;
+         // 
+         // tbFind
+         // 
+         tbFind.Location = new Point(1105, 185);
+         tbFind.Name = "tbFind";
+         tbFind.Size = new Size(186, 23);
+         tbFind.TabIndex = 16;
+         tbFind.KeyDown += tbFind_KeyDown;
+         // 
+         // lbFind
+         // 
+         lbFind.AutoSize = true;
+         lbFind.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         lbFind.Location = new Point(1099, 161);
+         lbFind.Name = "lbFind";
+         lbFind.Size = new Size(45, 21);
+         lbFind.TabIndex = 17;
+         lbFind.Text = "Find:";
+         // 
+         // btnFindPrev
+         // 
+         btnFindPrev.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         btnFindPrev.Location = new Point(1229, 214);
+         btnFindPrev.Name = "btnFindPrev";
+         btnFindPrev.Size = new Size(62, 26);
+         btnFindPrev.TabIndex = 18;
+         btnFindPrev.Text = "Prev";
+         btnFindPrev.UseVisualStyleBackColor = true;
+         btnFindPrev.Click += btnFindPrev_Click;
+         // 
+         // btnFindNext
+         // 
+         btnFindNext.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         btnFindNext.Location = new Point(1161, 214);
+         btnFindNext.Name = "btnFindNext";
+         btnFindNext.Size = new Size(62, 26);
+         btnFindNext.TabIndex = 19;
+         btnFindNext.Text = "Next";
+         btnFindNext.UseVisualStyleBackColor = true;
+         btnFindNext.Click += btnFindNext_Click;
+         // 
+         // lbFindBtn
+         // 
+         lbFindBtn.AutoSize = true;
+         lbFindBtn.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         lbFindBtn.Location = new Point(1110, 216);
+         lbFindBtn.Name = "lbFindBtn";
+         lbFindBtn.Size = new Size(45, 21);
+         lbFindBtn.TabIndex = 20;
+         lbFindBtn.Text = "Find:";
+         // 
          // cboxRemoveSitesFromDef
          // 
          cboxRemoveSitesFromDef.AutoSize = true;
@@ -197,22 +266,30 @@
          cboxRemoveSitesFromDef.Text = "Remove Sites From Default";
          cboxRemoveSitesFromDef.UseVisualStyleBackColor = true;
          // 
-         // btnOpenExtractedFolder
+         // cboxRemoveTrackingQueries
          // 
-         btnOpenExtractedFolder.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         btnOpenExtractedFolder.Location = new Point(1112, 94);
-         btnOpenExtractedFolder.Name = "btnOpenExtractedFolder";
-         btnOpenExtractedFolder.Size = new Size(167, 26);
-         btnOpenExtractedFolder.TabIndex = 15;
-         btnOpenExtractedFolder.Text = "Open Extracted Folder";
-         btnOpenExtractedFolder.UseVisualStyleBackColor = true;
-         btnOpenExtractedFolder.Click += btnOpenExtractedFolder_Click;
+         cboxRemoveTrackingQueries.AutoSize = true;
+         cboxRemoveTrackingQueries.Checked = true;
+         cboxRemoveTrackingQueries.CheckState = CheckState.Checked;
+         cboxRemoveTrackingQueries.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         cboxRemoveTrackingQueries.Location = new Point(263, 8);
+         cboxRemoveTrackingQueries.Name = "cboxRemoveTrackingQueries";
+         cboxRemoveTrackingQueries.Size = new Size(192, 23);
+         cboxRemoveTrackingQueries.TabIndex = 21;
+         cboxRemoveTrackingQueries.Text = "remove tracking queries";
+         cboxRemoveTrackingQueries.UseVisualStyleBackColor = true;
          // 
          // Form1
          // 
          AutoScaleDimensions = new SizeF(7F, 15F);
          AutoScaleMode = AutoScaleMode.Font;
          ClientSize = new Size(1303, 754);
+         Controls.Add(cboxRemoveTrackingQueries);
+         Controls.Add(lbFindBtn);
+         Controls.Add(btnFindNext);
+         Controls.Add(btnFindPrev);
+         Controls.Add(lbFind);
+         Controls.Add(tbFind);
          Controls.Add(btnOpenExtractedFolder);
          Controls.Add(cboxRemoveSitesFromDef);
          Controls.Add(cboxRemoveDuplicatesOnly);
@@ -252,7 +329,13 @@
       private CheckBox cboxOpenExtractedFile;
       private Button btnExtractWebpages;
       private CheckBox cboxRemoveDuplicatesOnly;
-      private CheckBox cboxRemoveSitesFromDef;
       private Button btnOpenExtractedFolder;
+      private TextBox tbFind;
+      private Label lbFind;
+      private Button btnFindPrev;
+      private Button btnFindNext;
+      private Label lbFindBtn;
+      private CheckBox cboxRemoveSitesFromDef;
+      private CheckBox cboxRemoveTrackingQueries;
    }
 }

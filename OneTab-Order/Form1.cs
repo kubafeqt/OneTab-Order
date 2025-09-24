@@ -3,11 +3,12 @@ using System.DirectoryServices.ActiveDirectory;
 
 #region comments
 
-//check for installed -> notepad++, pspad, ... , or notepad
-//can be extracted to txt, html with <a href=""> (+list for copy)
+//check for installed -> notepad++, pspad, ... , or notepad -> basic now
+//can be extracted to txt, html with <a href=""> (+list for copy) -> basic now (txt)
+//remove duplicates from extracted, even in rtbText -> basic now (not rtbText)
+//searching - builded in finder - get shortcut ctrl+f -> basic now
+//
 //delete all from and after - &/?pp=, &/?utm, &/?fbclid, - check other tracking queries -> delete tracking queries checkbox
-//remove duplicates from extracted, even in rtbText
-//ctrl+f - hledání - builded in
 //
 
 #endregion
@@ -198,26 +199,6 @@ namespace OneTab_Order
                ).ToList();
 
                rtbText.Text = string.Join(Environment.NewLine, remainingLines);
-
-               // Odeber vyexportované URL z rtbText, prázdné řádky zůstanou
-               //var allLines = rtbText.Text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
-               //                           .Select(row => row.TrimEnd())
-               //                           .ToList();
-
-               //var comparer = StringComparer.InvariantCultureIgnoreCase;
-               //var urlSet = new HashSet<string>(
-               //    Tabs.TabList
-               //        .Where(tab => !string.IsNullOrWhiteSpace(tab.Url) &&
-               //                      webpagesUrls.Any(url => tab.Url.Contains(url, StringComparison.OrdinalIgnoreCase)))
-               //        .Select(tab => tab.Url.Trim()),
-               //    comparer
-               //);
-
-               //var remainingLines = allLines.Where(row =>
-               //    string.IsNullOrWhiteSpace(row) || !urlSet.Contains(row.Trim())
-               //).ToList();
-
-               //rtbText.Text = string.Join(Environment.NewLine, remainingLines);
             }
             lbExtractedWebpages.Text = $"Extracted webpages: {lines.Count(line => !string.IsNullOrWhiteSpace(line))}";
 
@@ -225,7 +206,7 @@ namespace OneTab_Order
             {
                try
                {
-                  System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                  Process.Start(new System.Diagnostics.ProcessStartInfo
                   {
                      FileName = saveFileDialog.FileName,
                      UseShellExecute = true
@@ -270,6 +251,174 @@ namespace OneTab_Order
             Directory.CreateDirectory(folderPath);
          }
          return folderPath;
+      }
+
+      private int lastSearchPosition = 0;
+      private void btnFindNext_Click(object sender, EventArgs e)
+      {
+         string searchText = tbFind.Text;
+
+
+         if (string.IsNullOrEmpty(searchText))
+            return;
+
+         int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
+
+         if (index == -1 && lastSearchPosition > 0)
+         {
+            lastSearchPosition = 0;
+            index = rtbText.Find(searchText, 0, RichTextBoxFinds.None);
+         }
+
+         if (index != -1)
+         {
+            // Najde začátek a konec logického řádku (včetně zalamování)
+            int lineStart = index;
+            int lineEnd = index;
+
+            // Najde začátek řádku - jde zpět dokud nenarazí na \r nebo \n nebo začátek textu
+            while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
+            {
+               lineStart--;
+            }
+
+            // Najde konec řádku - jde dopředu dokud nenarazí na \r nebo \n nebo konec textu
+            while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
+            {
+               lineEnd++;
+            }
+
+            // Pokud je na konci \r\n, zahrne je do výběru
+            if (lineEnd < rtbText.Text.Length - 1 && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
+            {
+               lineEnd += 2; // \r\n
+            }
+            else if (lineEnd < rtbText.Text.Length && (rtbText.Text[lineEnd] == '\r' || rtbText.Text[lineEnd] == '\n'))
+            {
+               lineEnd += 1; // \r nebo \n
+            }
+
+            // Označí celý řádek
+            rtbText.Select(lineStart, lineEnd - lineStart);
+            rtbText.ScrollToCaret();
+            rtbText.Focus();
+
+            lastSearchPosition = index + searchText.Length;
+         }
+         else
+         {
+            MessageBox.Show("Text nebyl nalezen.");
+            lastSearchPosition = 0;
+         }
+      }
+
+      private void btnFindPrev_Click(object sender, EventArgs e)
+      {
+         string searchText = tbFind.Text;
+
+         if (string.IsNullOrEmpty(searchText))
+            return;
+
+         // Najde všechny výskyty textu
+         List<int> allPositions = new List<int>();
+         int pos = 0;
+         while ((pos = rtbText.Find(searchText, pos, RichTextBoxFinds.None)) != -1)
+         {
+            allPositions.Add(pos);
+            pos += searchText.Length;
+         }
+
+         if (allPositions.Count == 0)
+         {
+            MessageBox.Show("Text nebyl nalezen.");
+            return;
+         }
+
+         // Najde aktuální pozici v seznamu
+         int currentIndex = -1;
+         for (int i = 0; i < allPositions.Count; i++)
+         {
+            if (allPositions[i] >= lastSearchPosition)
+            {
+               currentIndex = i;
+               break;
+            }
+         }
+
+         // Určí předchozí pozici
+         int prevIndex;
+         if (currentIndex <= 0)
+         {
+            // Pokud jsme na začátku nebo před prvním, jde na poslední
+            prevIndex = allPositions.Count - 1;
+         }
+         else
+         {
+            prevIndex = currentIndex - 1;
+         }
+
+         int index = allPositions[prevIndex];
+
+         // Najde začátek a konec logického řádku (včetně zalamování)
+         int lineStart = index;
+         int lineEnd = index;
+
+         // Najde začátek řádku - jde zpět dokud nenarazí na \r nebo \n nebo začátek textu
+         while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
+         {
+            lineStart--;
+         }
+
+         // Najde konec řádku - jde dopředu dokud nenarazí na \r nebo \n nebo konec textu
+         while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
+         {
+            lineEnd++;
+         }
+
+         // Pokud je na konci \r\n, zahrne je do výběru
+         if (lineEnd < rtbText.Text.Length - 1 && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
+         {
+            lineEnd += 2; // \r\n
+         }
+         else if (lineEnd < rtbText.Text.Length && (rtbText.Text[lineEnd] == '\r' || rtbText.Text[lineEnd] == '\n'))
+         {
+            lineEnd += 1; // \r nebo \n
+         }
+
+         // Označí celý řádek
+         rtbText.Select(lineStart, lineEnd - lineStart);
+         rtbText.ScrollToCaret();
+         rtbText.Focus();
+
+         // Nastaví pozici pro další hledání
+         lastSearchPosition = index;
+      }
+
+      private void tbFind_KeyDown(object sender, KeyEventArgs e)
+      {
+         if (e.KeyCode == Keys.Enter)
+         {
+            btnFindNext.PerformClick();
+            //tbFind.Focus();
+            e.SuppressKeyPress = true; //prevents bump sound
+         }
+      }
+
+      private void rtbText_KeyDown(object sender, KeyEventArgs e)
+      {
+         if (rtbText.SelectionLength > 0)
+         {
+            if (e.KeyCode == Keys.Enter)
+            {
+               btnFindNext.PerformClick();
+               e.SuppressKeyPress = true;
+            }
+            //if (e.KeyCode == Keys.Up) //not working correctly
+            //{
+            //   btnFindPrev.PerformClick();
+            //   e.SuppressKeyPress = true;
+            //}
+         }
       }
    }
 }
