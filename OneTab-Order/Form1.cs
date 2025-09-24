@@ -254,6 +254,7 @@ namespace OneTab_Order
       }
 
       private int lastSearchPosition = 0;
+      private string lastSearchText = "";
       private void btnFindNext_Click(object sender, EventArgs e)
       {
          Find();
@@ -277,47 +278,37 @@ namespace OneTab_Order
 
       private void FindNext(string searchText)
       {
+         // Najde výskyt až ZA poslední pozicí
          int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
 
          if (index == -1 && lastSearchPosition > 0)
          {
-            lastSearchPosition = 0;
+            // Začít od začátku textu (cyklické hledání)
             index = rtbText.Find(searchText, 0, RichTextBoxFinds.None);
          }
 
          if (index != -1)
          {
-            // Najde začátek a konec logického řádku (včetně zalamování)
+            // Najde začátek a konec logického řádku (jako dřív)
             int lineStart = index;
             int lineEnd = index;
 
-            // Najde začátek řádku - jde zpět dokud nenarazí na \r nebo \n nebo začátek textu
             while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
-            {
                lineStart--;
-            }
 
-            // Najde konec řádku - jde dopředu dokud nenarazí na \r nebo \n nebo konec textu
             while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
-            {
                lineEnd++;
-            }
 
-            // Pokud je na konci \r\n, zahrne je do výběru
             if (lineEnd < rtbText.Text.Length - 1 && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
-            {
-               lineEnd += 2; // \r\n
-            }
+               lineEnd += 2;
             else if (lineEnd < rtbText.Text.Length && (rtbText.Text[lineEnd] == '\r' || rtbText.Text[lineEnd] == '\n'))
-            {
-               lineEnd += 1; // \r nebo \n
-            }
+               lineEnd += 1;
 
-            // Označí celý řádek
             rtbText.Select(lineStart, lineEnd - lineStart);
             rtbText.ScrollToCaret();
             rtbText.Focus();
 
+            // Nastaví lastSearchPosition na první znak ZA nalezeným textem
             lastSearchPosition = index + searchText.Length;
          }
          else
@@ -329,79 +320,45 @@ namespace OneTab_Order
 
       private void FindPrev(string searchText)
       {
-         // Najde všechny výskyty textu
-         List<int> allPositions = new List<int>();
-         int pos = 0;
-         while ((pos = rtbText.Find(searchText, pos, RichTextBoxFinds.None)) != -1)
+         // Reset pozice při změně hledaného textu
+         if (searchText != lastSearchText)
          {
-            allPositions.Add(pos);
-            pos += searchText.Length;
+            lastSearchText = searchText;
+            lastSearchPosition = rtbText.TextLength;
          }
 
-         if (allPositions.Count == 0)
-         {
-            MessageBox.Show("Text nebyl nalezen.");
-            return;
-         }
+         // Najdi předchozí výskyt (od pozice před current lastSearchPosition)
+         int start = Math.Max(0, lastSearchPosition - 1);
+         int index = rtbText.Find(searchText, 0, start, RichTextBoxFinds.Reverse);
 
-         // Najde aktuální pozici v seznamu
-         int currentIndex = -1;
-         for (int i = 0; i < allPositions.Count; i++)
+         if (index != -1)
          {
-            if (allPositions[i] >= lastSearchPosition)
-            {
-               currentIndex = i;
-               break;
-            }
-         }
+            // Najdi začátek a konec logického řádku (jako dříve)
+            int lineStart = index;
+            int lineEnd = index;
 
-         // Určí předchozí pozici
-         int prevIndex;
-         if (currentIndex <= 0)
-         {
-            // Pokud jsme na začátku nebo před prvním, jde na poslední
-            prevIndex = allPositions.Count - 1;
+            while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
+               lineStart--;
+
+            while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
+               lineEnd++;
+
+            if (lineEnd < rtbText.Text.Length - 1 && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
+               lineEnd += 2;
+            else if (lineEnd < rtbText.Text.Length && (rtbText.Text[lineEnd] == '\r' || rtbText.Text[lineEnd] == '\n'))
+               lineEnd += 1;
+
+            rtbText.Select(lineStart, lineEnd - lineStart);
+            rtbText.ScrollToCaret();
+            rtbText.Focus();
+
+            lastSearchPosition = index;
          }
          else
          {
-            prevIndex = currentIndex - 1;
+            MessageBox.Show("Text nebyl nalezen.");
+            lastSearchPosition = rtbText.TextLength;
          }
-
-         int index = allPositions[prevIndex];
-
-         // Najde začátek a konec logického řádku (včetně zalamování)
-         int lineStart = index;
-         int lineEnd = index;
-
-         // Najde začátek řádku - jde zpět dokud nenarazí na \r nebo \n nebo začátek textu
-         while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
-         {
-            lineStart--;
-         }
-
-         // Najde konec řádku - jde dopředu dokud nenarazí na \r nebo \n nebo konec textu
-         while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
-         {
-            lineEnd++;
-         }
-
-         // Pokud je na konci \r\n, zahrne je do výběru
-         if (lineEnd < rtbText.Text.Length - 1 && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
-         {
-            lineEnd += 2; // \r\n
-         }
-         else if (lineEnd < rtbText.Text.Length && (rtbText.Text[lineEnd] == '\r' || rtbText.Text[lineEnd] == '\n'))
-         {
-            lineEnd += 1; // \r nebo \n
-         }
-
-         // Označí celý řádek
-         rtbText.Select(lineStart, lineEnd - lineStart);
-         rtbText.ScrollToCaret();
-         rtbText.Focus();
-
-         // Nastaví pozici pro další hledání
-         lastSearchPosition = index;
       }
 
       private void tbFind_KeyDown(object sender, KeyEventArgs e)
