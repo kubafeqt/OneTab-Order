@@ -21,4 +21,9 @@ This tool help you to organize tabs exported from the OneTab browser extension.
 4. Copy all text from the RichTextBox and paste it to import back into OneTab.
 
 
+## New features
+
+will be announced
+
+
 
