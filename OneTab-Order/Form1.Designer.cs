@@ -40,7 +40,7 @@
          cmbRemoveDuplicatesExtractedType = new ComboBox();
          cboxOpenExtractedFile = new CheckBox();
          btnExtractWebpages = new Button();
-         cboxRemoveDuplicatesOnly = new CheckBox();
+         cboxRemoveOnly = new CheckBox();
          btnOpenExtractedFolder = new Button();
          tbFind = new TextBox();
          lbFind = new Label();
@@ -185,17 +185,17 @@
          btnExtractWebpages.UseVisualStyleBackColor = true;
          btnExtractWebpages.Click += btnExtractWebpages_Click;
          // 
-         // cboxRemoveDuplicatesOnly
+         // cboxRemoveOnly
          // 
-         cboxRemoveDuplicatesOnly.AutoSize = true;
-         cboxRemoveDuplicatesOnly.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         cboxRemoveDuplicatesOnly.Location = new Point(22, 22);
-         cboxRemoveDuplicatesOnly.Name = "cboxRemoveDuplicatesOnly";
-         cboxRemoveDuplicatesOnly.Size = new Size(222, 23);
-         cboxRemoveDuplicatesOnly.TabIndex = 13;
-         cboxRemoveDuplicatesOnly.Text = "remove duplicates from only";
-         cboxRemoveDuplicatesOnly.UseVisualStyleBackColor = true;
-         cboxRemoveDuplicatesOnly.CheckedChanged += cboxRemoveDuplicatesOnly_CheckedChanged;
+         cboxRemoveOnly.AutoSize = true;
+         cboxRemoveOnly.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         cboxRemoveOnly.Location = new Point(72, 17);
+         cboxRemoveOnly.Name = "cboxRemoveOnly";
+         cboxRemoveOnly.Size = new Size(113, 23);
+         cboxRemoveOnly.TabIndex = 13;
+         cboxRemoveOnly.Text = "remove only";
+         cboxRemoveOnly.UseVisualStyleBackColor = true;
+         cboxRemoveOnly.CheckedChanged += cboxRemoveDuplicatesOnly_CheckedChanged;
          // 
          // btnOpenExtractedFolder
          // 
@@ -343,7 +343,7 @@
          Controls.Add(tbFind);
          Controls.Add(btnOpenExtractedFolder);
          Controls.Add(cboxRemoveSitesFromDef);
-         Controls.Add(cboxRemoveDuplicatesOnly);
+         Controls.Add(cboxRemoveOnly);
          Controls.Add(btnExtractWebpages);
          Controls.Add(cboxOpenExtractedFile);
          Controls.Add(cmbRemoveDuplicatesExtractedType);
@@ -361,6 +361,7 @@
          Name = "Form1";
          Text = "OneTab order";
          Paint += Form1_Paint;
+         KeyDown += Form1_KeyDown;
          ResumeLayout(false);
          PerformLayout();
       }
@@ -379,7 +380,7 @@
       private ComboBox cmbRemoveDuplicatesExtractedType;
       private CheckBox cboxOpenExtractedFile;
       private Button btnExtractWebpages;
-      private CheckBox cboxRemoveDuplicatesOnly;
+      private CheckBox cboxRemoveOnly;
       private Button btnOpenExtractedFolder;
       private TextBox tbFind;
       private Label lbFind;

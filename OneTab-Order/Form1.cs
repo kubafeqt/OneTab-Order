@@ -8,7 +8,8 @@ using System.DirectoryServices.ActiveDirectory;
 //remove duplicates from extracted, even in rtbText -> basic now (not rtbText)
 //searching - builded in finder - get shortcut ctrl+f -> basic now
 //
-//delete all from and after - &/?pp=, &/?utm, &/?fbclid, - check other tracking queries -> delete tracking queries checkbox
+//delete all from and after - &/?pp=, &/?utm, &/?fbclid, - check other tracking queries -> remove tracking queries checkbox
+//
 //
 
 #endregion
@@ -21,6 +22,8 @@ namespace OneTab_Order
       public Form1()
       {
          InitializeComponent();
+         this.KeyPreview = true; // Formulář dostane všechny key eventy jako první
+
          timer.Interval = 100; //100 ms
          timer.Tick += Timer_Tick;
          timer.Start();
@@ -36,7 +39,7 @@ namespace OneTab_Order
 
       private void ReAddTabs(ref bool notRemoveEmptyEntries)
       {
-         notRemoveEmptyEntries = !notRemoveEmptyEntries ? cboxRemoveDuplicatesOnly.Checked : notRemoveEmptyEntries; //true = true
+         notRemoveEmptyEntries = !notRemoveEmptyEntries ? cboxRemoveOnly.Checked : notRemoveEmptyEntries; //true = true
          Tabs.TabList.Clear(); //důležitý
          Tabs.AddTabs(rtbText.Text, notRemoveEmptyEntries);
       }
@@ -51,7 +54,7 @@ namespace OneTab_Order
          bool notRemoveEmptyEntries = false;
          ReAddTabs(ref notRemoveEmptyEntries);
 
-         if (!cboxRemoveDuplicatesOnly.Checked)
+         if (!cboxRemoveOnly.Checked)
          {
             Tabs.OrderTabs();
          }
@@ -238,7 +241,7 @@ namespace OneTab_Order
 
       private void cboxRemoveDuplicatesOnly_CheckedChanged(object sender, EventArgs e)
       {
-         btnOrder.Text = cboxRemoveDuplicatesOnly.Checked ? "remove" : "order";
+         btnOrder.Text = cboxRemoveOnly.Checked ? "remove" : "order";
       }
 
       private void btnOpenExtractedFolder_Click(object sender, EventArgs e)
@@ -285,20 +288,118 @@ namespace OneTab_Order
          Find(searchText);
       }
 
+      int lastSearchLine = -1;
       private void FindNext(string searchText)
       {
-         if (cmbFindType.SelectedItem.ToString() != "full line" && (!Tabs.TabsAdded || Tabs.TabsChanged))
-         {
-            bool notRemoveEmptyEntries = false;
-            ReAddTabs(ref notRemoveEmptyEntries);
-         }
          if (cmbFindType.SelectedItem.ToString() == "url only")
          {
+            while (true) // Smyčka pro hledání dalšího platného výskytu
+            {
+               // 1. Použij spolehlivé rtbText.Find() pro nalezení dalšího výskytu
+               int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
 
+               // Cyklické hledání: pokud nic nenajde, zkus od začátku
+               if (index == -1 && lastSearchPosition > 0)
+               {
+                  lastSearchPosition = 0;
+                  index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
+               }
+
+               // Pokud se nenašlo vůbec nic, ukonči hledání
+               if (index == -1)
+               {
+                  MessageBox.Show("Text nebyl nalezen.");
+                  lastSearchPosition = 0;
+                  break; // Ukončí while smyčku
+               }
+
+               // 2. Ověř, zda je nalezený výskyt platný (před pipe '|')
+               int lineStart = index;
+               while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\n')
+                  lineStart--;
+
+               int lineEnd = index;
+               while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\n')
+                  lineEnd++;
+
+               string lineText = rtbText.Text.Substring(lineStart, lineEnd - lineStart);
+               int pipeIndex = lineText.IndexOf('|');
+               int searchTextIndexInLine = index - lineStart;
+
+               // Pokud je výskyt platný (není pipe, nebo je výskyt před pipe)
+               if (pipeIndex == -1 || searchTextIndexInLine < pipeIndex)
+               {
+                  // 3. Označ celý řádek (stejně jako ve tvém funkčním kódu)
+                  rtbText.Select(lineStart, lineEnd - lineStart);
+                  rtbText.ScrollToCaret();
+                  rtbText.Focus();
+
+                  // Nastav pozici pro další hledání a ukonči smyčku
+                  lastSearchPosition = index + searchText.Length;
+                  break; // Ukončí while smyčku
+               }
+               else
+               {
+                  // Nalezený výskyt je neplatný (je za pipe), hledej dál
+                  lastSearchPosition = index + searchText.Length;
+                  // Smyčka 'while' automaticky pokračuje a hledá další výskyt
+               }
+            }
          }
          if (cmbFindType.SelectedItem.ToString() == "content only")
          {
+            while (true) // Smyčka pro hledání dalšího platného výskytu
+            {
+               // 1. Použij spolehlivé rtbText.Find() pro nalezení dalšího výskytu
+               int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
 
+               // Cyklické hledání: pokud nic nenajde, zkus od začátku
+               if (index == -1 && lastSearchPosition > 0)
+               {
+                  lastSearchPosition = 0;
+                  index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
+               }
+
+               // Pokud se nenašlo vůbec nic, ukonči hledání
+               if (index == -1)
+               {
+                  MessageBox.Show("Text nebyl nalezen v obsahu (za '|').");
+                  lastSearchPosition = 0;
+                  break; // Ukončí while smyčku
+               }
+
+               // 2. Ověř, zda je nalezený výskyt platný (až za pipe '|')
+               int lineStart = index;
+               while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\n')
+                  lineStart--;
+
+               int lineEnd = index;
+               while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\n')
+                  lineEnd++;
+
+               string lineText = rtbText.Text.Substring(lineStart, lineEnd - lineStart);
+               int pipeIndex = lineText.IndexOf('|');
+               int searchTextIndexInLine = index - lineStart;
+
+               // Pokud je výskyt platný (existuje pipe A výskyt je až za ním)
+               if (pipeIndex != -1 && searchTextIndexInLine > pipeIndex)
+               {
+                  // 3. Označ celý řádek (spolehlivá metoda)
+                  rtbText.Select(lineStart, lineEnd - lineStart);
+                  rtbText.ScrollToCaret();
+                  rtbText.Focus();
+
+                  // Nastav pozici pro další hledání a ukonči smyčku
+                  lastSearchPosition = index + searchText.Length;
+                  break; // Ukončí while smyčku
+               }
+               else
+               {
+                  // Nalezený výskyt je neplatný (před pipe nebo pipe neexistuje), hledej dál
+                  lastSearchPosition = index + searchText.Length;
+                  // Smyčka 'while' automaticky pokračuje a hledá další výskyt
+               }
+            }
          }
          if (cmbFindType.SelectedItem.ToString() == "full line")
          {
@@ -352,11 +453,11 @@ namespace OneTab_Order
          }
          if (cmbFindType.SelectedItem.ToString() == "url only")
          {
-
+            MessageBox.Show("Not implemented yet.");
          }
          if (cmbFindType.SelectedItem.ToString() == "content only")
          {
-
+            MessageBox.Show("Not implemented yet.");
          }
          if (cmbFindType.SelectedItem.ToString() == "full line")
          {
@@ -420,7 +521,7 @@ namespace OneTab_Order
                Find();
                e.SuppressKeyPress = true;
             }
-            if (e.KeyCode == Keys.Up) //not working correctly
+            if (e.KeyCode == Keys.Up)
             {
                Find(false);
                e.SuppressKeyPress = true;
@@ -432,5 +533,17 @@ namespace OneTab_Order
       {
          Tabs.TabsChanged = true;
       }
+
+      private void Form1_KeyDown(object sender, KeyEventArgs e)
+      {
+         if (e.Control && e.KeyCode == Keys.F) // Detect Ctrl+F
+         {
+            tbFind.Focus();
+            tbFind.SelectAll();
+            e.SuppressKeyPress = true; // Prevent the default behavior
+         }
+      }
+
+
    }
 }
