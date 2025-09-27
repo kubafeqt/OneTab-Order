@@ -4,7 +4,6 @@
 
 This tool help you to organize tabs exported from the OneTab browser extension.
 
-### Very basic tool yet.
 
 ## Features
 
@@ -12,6 +11,8 @@ This tool help you to organize tabs exported from the OneTab browser extension.
 - **Remove duplicates:** Automatically removes duplicate tabs based on URL.
 - **Group by domain:** Tabs are grouped by their domain (e.g., `youtube.com`) with a blank line between groups.
 - **Easy export:** Output organized tabs as text, ready to copy or use elsewhere.
+- **Extract webpages:** Extract webpages to file by url.
+- **Find webpages:** Find webpages by url only or content only or full line.
 
 ## Usage
 
