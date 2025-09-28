@@ -1,18 +1,23 @@
 # OneTab Orderer
 
-**Orders OneTab (browser addon) tabs.**
+**Simplify and organize your OneTab (browser add-on) exports with ease.**
 
-This tool help you to organize tabs exported from the OneTab browser extension.
+This tool help you to sort, clean, and organize tabs exported from the OneTab browser extension.
 
 
 ## Features
 
-- **Sort tabs:** Sort by URL (descending) and description (ascending).
-- **Remove duplicates:** Automatically removes duplicate tabs based on URL.
-- **Group by domain:** Tabs are grouped by their domain (e.g., `youtube.com`) with a blank line between groups.
-- **Easy export:** Output organized tabs as text, ready to copy or use elsewhere.
-- **Extract webpages:** Extract webpages to file by url.
-- **Find webpages:** Find webpages by url only or content only or full line.
+- **Sort Tabs**: Automatically sort tabs by URL (descending) and description (ascending).
+- **Remove Duplicates**: Detect and remove duplicate tabs based on their URLs.
+- **Group by Domain**: Organize tabs by their domain (e.g., `youtube.com`), with blank lines added between groups.
+- **Easy Export**: Generate clean, organized text output, ready to copy or use elsewhere.
+- **Extract Webpages**: Export webpages to a file by URL.
+- **Search Webpages**: Find webpages in your tabs by:
+  - URL only
+  - Content only
+  - Full line match
+- **Remove Tracking Queries**: Automatically strip tracking parameters from URLs when sorting, removing, or exporting tabs.
+
 
 ## Usage
 
@@ -22,9 +27,10 @@ This tool help you to organize tabs exported from the OneTab browser extension.
 4. Copy all text from the RichTextBox and paste it to import back into OneTab.
 
 
-## New features
+## Upcoming Features
 
-will be announced
+Stay tuned for announcements on new features and updates!
+
 
 
 
