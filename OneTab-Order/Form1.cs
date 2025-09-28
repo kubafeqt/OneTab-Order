@@ -3,10 +3,10 @@ using System.DirectoryServices.ActiveDirectory;
 
 #region comments
 
-//check for installed -> notepad++, pspad, ... , or notepad -> basic now
+//check for installed -> notepad++, pspad, ... , or notepad -> basic now (just notepad)
 //can be extracted to txt, html with <a href=""> (+list for copy) -> basic now (txt)
-//remove duplicates from extracted, even in rtbText -> basic now (not rtbText)
-//searching - builded in finder - get shortcut ctrl+f -> basic now
+//remove duplicates from extracted, even in rtbText -> working
+//searching - builded in finder - get shortcut ctrl+f -> top now
 //
 //delete all from and after - &/?pp=, &/?utm, &/?fbclid, - check other tracking queries -> remove tracking queries checkbox
 //
@@ -24,7 +24,7 @@ namespace OneTab_Order
          InitializeComponent();
          this.KeyPreview = true; // Formulář dostane všechny key eventy jako první
 
-         timer.Interval = 100; //100 ms
+         timer.Interval = 250; //250 ms
          timer.Tick += Timer_Tick;
          timer.Start();
          cmbRemoveDuplicatesExtractedType.Items.AddRange(new string[] { "from below", "from up" });
@@ -60,6 +60,11 @@ namespace OneTab_Order
          {
             Tabs.OrderTabs();
          }
+         if (cboxRemoveTrackingQueries.Checked)
+         {
+            Tabs.RemoveTrackingQueries();
+            lbTrackingQueriesRemoved.Text = $"Tracking queries removed: {Tabs.trackingQueriesRemoved}";
+         }
          if (cboxRemoveDuplicatesFromBelow.Checked)
          {
             Tabs.RemoveDuplicates(Tabs.DuplicateRemoveMode.KeepFirst);
@@ -70,7 +75,7 @@ namespace OneTab_Order
          }
          rtbText.Clear();
 
-         if (!notRemoveEmptyEntries)
+         if (!notRemoveEmptyEntries) //order tabs
          {
             foreach (var group in Tabs.GroupTabs()) //zavolá se pouze jednou, na začátku foreach
             {
@@ -81,7 +86,7 @@ namespace OneTab_Order
                rtbText.AppendText("\n"); //mezera mezi skupinami
             }
          }
-         else
+         else //remove duplicates only - not order tabs
          {
             foreach (var tab in Tabs.TabList)
             {
@@ -200,7 +205,7 @@ namespace OneTab_Order
             File.WriteAllLines(saveFileDialog.FileName, lines);
             MessageBox.Show("Soubor byl úspěšně uložen.", "Hotovo", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            if (cboxRemoveSitesFromDef.Checked)
+            if (cboxRemoveSitesFromDef.Checked) //odeber z rtbText
             {
                var allLines = rtbText.Text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
                                .Select(row => row.TrimEnd())

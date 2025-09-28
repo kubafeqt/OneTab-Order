@@ -9,6 +9,80 @@ namespace OneTab_Order
 {
    internal class Tabs
    {
+      public static List<string> TrackingQueries = new List<string>
+      {
+          "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+          "gclid", "fbclid", "mc_cid", "mc_eid", "ref", "referrer", "ref_src",
+          "igshid", "mkt_tok", "yclid", "dclid", "pk_campaign", "pk_kwd", "utm_referrer",
+          "utm_reader", "utm_name", "utm_social", "utm_social-type", "utm_swu", "utm_expid",
+          "utm_id", "utm_lp", "utm_viz_id", "utm_pubreferrer", "utm_scp", "utm_source_platform",
+          "utm_source_platform_type", "utm_creative_format", "utm_brand", "utm_audience",
+          "utm_placement", "utm_target", "utm_ban", "utm_adgroup", "utm_ad", "utm_keyword",
+          "utm_matchtype", "utm_network", "utm_device", "utm_adposition", "utm_feeditemid",
+          "utm_targetid", "utm_loc_interest_ms", "utm_loc_physical_ms", "utm_placementtype",
+          "utm_productchannel", "utm_productcountry", "utm_productlanguage", "utm_creative",
+          "utm_adtype", "utm_targettype", "utm_loc_interest", "utm_loc_physical", "utm_contentid",
+          "utm_contenttype", "utm_productid", "utm_productgroupid", "utm_campaignid",
+          "utm_campaigntype", "utm_adgroupid", "utm_keywordid", "utm_matchtypeid", "utm_networktype",
+          "utm_deviceid", "utm_adpositionid", "utm_feeditemidid", "utm", "click", "referrerid", "sid", "sessionid",
+          "session_id", "sessionid2", "sessionToken", "session_token", "token", "aff_id", "affiliate_id",
+          "partnerid", "partner_id", "source", "campaign", "medium", "term", "content", "ad_id", "trk",
+          "trkCampaign", "trkContact", "trkMsg", "trkModule", "trkSrc", "icid", "soc_src", "soc_trk",
+          "soc_platform", "soc_medium", "soc_campaign", "soc_content", "soc_term", "pid", "afid", "dclid_test",
+          "gclsrc", "gcl_aw", "gcl_dc", "cx", "ncid", "adgroup", "adset", "adset_id", "adsetid", "creative",
+          "creative_id", "creativeid", "cmpid", "placement", "placementid", "matchtype", "matchtypeid",
+          "loc_interest_ms", "loc_interest", "loc_physical_ms", "loc_physical", "fb_action_ids",
+          "fb_action_types", "fb_ref", "fb_source", "action_object_map", "action_type_map",
+          "action_ref_map", "referrer_type", "referrer_source", "referrer_medium", "referrer_term",
+          "referrer_content", "referrer_campaign", "_gid", "_ga", "_fbp", "ajs_aid", "ajs_anid",
+          "ajs_user_id", "ajs_group_id", "ajs_job_id", "ajs_job_referrer", "tracking_id", "trk_info",
+          "trk_info1", "trk_info2", "trk_info3", "trk_info4", "trk_info5", "shopify_y", "shopify_s",
+          "shopify_x", "scid", "sc_intid", "sc_lid", "sc_cid", "sc_eid", "sc_campid", "sc_channel",
+          "sc_geo", "sc_outlet", "sc_country", "sc_currency", "sc_lang", "sc_version", "sc_affiliate",
+          "sc_affiliate_id", "sc_referrer", "sc_referrer_domain", "sc_referrer_url", "sc_keyword",
+          "sc_matchtype", "sc_network", "sc_device", "sc_adposition", "sc_feeditemid", "sc_targetid",
+          "sc_loc_interest_ms", "sc_loc_physical_ms",
+          "clid", "rdid", "msid", "vid", "lid", "zid", "rid", "cmp", "adset_name", "placement_name",
+          "adgroup_name", "creative_name", "matchtype_name", "action_id", "action_name",
+          "action_source", "action_medium", "action_campaign", "action_content",
+          "action_term", "action_platform", "conversion_id", "conversion_label", "conversion_name",
+          "pixel_id", "fbclid_source", "ga_session_id", "ga_user_id", "ga_campaign_id",
+          "ga_content_id", "ga_tracker", "ga_term_id", "ga_device_id", "ga_source_id", "ga_ref_id",
+          "ga_network_id", "ga_matchtype_id", "ga_adgroup_id", "ga_ad_id", "ga_medium_id"
+      };
+
+      public static int trackingQueriesRemoved;
+      public static void RemoveTrackingQueries()
+      {
+         trackingQueriesRemoved = 0;
+         foreach (var tab in TabList)
+         {
+            bool queryRemoved; // Flag to track if a query is removed
+            do
+            {
+               queryRemoved = false;
+               foreach (var query in TrackingQueries)
+               {
+                  int queryIndex = tab.Url.IndexOf($"?{query}=", StringComparison.OrdinalIgnoreCase);
+                  if (queryIndex == -1)
+                  {
+                     queryIndex = tab.Url.IndexOf($"&{query}=", StringComparison.OrdinalIgnoreCase);
+                  }
+                  if (queryIndex != -1)
+                  {
+                     tab.Url = tab.Url.Substring(0, queryIndex);
+                     // Optionally trim any trailing '?' or '&' if they are left at the end
+                     tab.Url = tab.Url.TrimEnd('?', '&');
+                     trackingQueriesRemoved++;
+                     queryRemoved = true; // Mark that a query was removed
+                     break; // Break out of the inner loop to start over
+                  }
+               }
+            }
+            while (queryRemoved); // Repeat until no queries are removed in the last pass
+         }
+      }
+
       public static List<Tabs> TabList = new List<Tabs>();
       public static int RemovedDuplicates = 0;
       //public static bool TabsAdded = false;
