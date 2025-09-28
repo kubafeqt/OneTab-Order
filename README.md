@@ -27,11 +27,6 @@ This tool help you to sort, clean, and organize tabs exported from the OneTab br
 4. Copy all text from the RichTextBox and paste it to import back into OneTab.
 
 
-## Upcoming Features
-
-Stay tuned for announcements on new features and updates!
-
-
 ## 🤖 AI Assistance
 
 This project was made possible with the help of advanced AI tools, including **GPT-4.1/4.0**, **Gemini 2.5 Pro**, and **Claude Sonnet 3.7 Thinking**, which supported various aspects of software implementation and problem-solving.
@@ -41,4 +36,9 @@ Their contributions included:
 - Enhancing and refining documentation for better clarity and usability.
 
 Special thanks to these AI systems for their role in bringing this project to life!
+
+
+## Upcoming Features
+
+Stay tuned for announcements on new features and updates!
 
