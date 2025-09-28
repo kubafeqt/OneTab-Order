@@ -1,6 +1,6 @@
 # OneTab Order
 
-**Simplify and organize your OneTab (browser add-on) exports with ease.**
+**A powerful tool to organize and clean up your OneTab (browser add-on) exports.**
 
 This tool help you to sort, clean, and organize tabs exported from the OneTab browser extension.
 
@@ -13,9 +13,9 @@ This tool help you to sort, clean, and organize tabs exported from the OneTab br
 - **Easy Export**: Generate clean, organized text output, ready to copy or use elsewhere.
 - **Extract Webpages**: Export webpages to a file by URL.
 - **Search Webpages**: Find webpages in your tabs by:
+  - Full line match
   - URL only
   - Content only
-  - Full line match
 - **Remove Tracking Queries**: Automatically strip tracking parameters from URLs when sorting, removing, or exporting tabs.
 
 
