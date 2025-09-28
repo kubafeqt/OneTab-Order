@@ -1,4 +1,4 @@
-# OneTab Orderer
+# OneTab Order
 
 **Simplify and organize your OneTab (browser add-on) exports with ease.**
 
