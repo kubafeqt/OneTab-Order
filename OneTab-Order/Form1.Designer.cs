@@ -63,7 +63,6 @@
          rtbText.Size = new Size(1071, 650);
          rtbText.TabIndex = 0;
          rtbText.Text = "";
-         rtbText.TextChanged += rtbText_TextChanged;
          rtbText.KeyDown += rtbText_KeyDown;
          // 
          // btnOrder
@@ -94,7 +93,7 @@
          btnCopyAllRtb.Location = new Point(141, 51);
          btnCopyAllRtb.Name = "btnCopyAllRtb";
          btnCopyAllRtb.Size = new Size(94, 35);
-         btnCopyAllRtb.TabIndex = 3;
+         btnCopyAllRtb.TabIndex = 2;
          btnCopyAllRtb.Text = "copy text";
          btnCopyAllRtb.UseVisualStyleBackColor = true;
          btnCopyAllRtb.Click += btnCopyAllRtb_Click;
@@ -147,7 +146,7 @@
          cboxRemoveDuplicatesExtracted.Location = new Point(865, 8);
          cboxRemoveDuplicatesExtracted.Name = "cboxRemoveDuplicatesExtracted";
          cboxRemoveDuplicatesExtracted.Size = new Size(160, 23);
-         cboxRemoveDuplicatesExtracted.TabIndex = 9;
+         cboxRemoveDuplicatesExtracted.TabIndex = 8;
          cboxRemoveDuplicatesExtracted.Text = "Remove Duplicates:";
          cboxRemoveDuplicatesExtracted.UseVisualStyleBackColor = true;
          cboxRemoveDuplicatesExtracted.CheckedChanged += cboxRemoveDuplicatesExtracted_CheckedChanged;
@@ -159,7 +158,7 @@
          cmbRemoveDuplicatesExtractedType.Location = new Point(1027, 8);
          cmbRemoveDuplicatesExtractedType.Name = "cmbRemoveDuplicatesExtractedType";
          cmbRemoveDuplicatesExtractedType.Size = new Size(178, 23);
-         cmbRemoveDuplicatesExtractedType.TabIndex = 10;
+         cmbRemoveDuplicatesExtractedType.TabIndex = 11;
          // 
          // cboxOpenExtractedFile
          // 
@@ -170,7 +169,7 @@
          cboxOpenExtractedFile.Location = new Point(1112, 65);
          cboxOpenExtractedFile.Name = "cboxOpenExtractedFile";
          cboxOpenExtractedFile.Size = new Size(156, 23);
-         cboxOpenExtractedFile.TabIndex = 11;
+         cboxOpenExtractedFile.TabIndex = 10;
          cboxOpenExtractedFile.Text = "Open Extracted file";
          cboxOpenExtractedFile.UseVisualStyleBackColor = true;
          // 
@@ -192,7 +191,7 @@
          cboxRemoveOnly.Location = new Point(72, 17);
          cboxRemoveOnly.Name = "cboxRemoveOnly";
          cboxRemoveOnly.Size = new Size(113, 23);
-         cboxRemoveOnly.TabIndex = 13;
+         cboxRemoveOnly.TabIndex = 3;
          cboxRemoveOnly.Text = "remove only";
          cboxRemoveOnly.UseVisualStyleBackColor = true;
          cboxRemoveOnly.CheckedChanged += cboxRemoveDuplicatesOnly_CheckedChanged;
@@ -203,7 +202,7 @@
          btnOpenExtractedFolder.Location = new Point(1108, 105);
          btnOpenExtractedFolder.Name = "btnOpenExtractedFolder";
          btnOpenExtractedFolder.Size = new Size(167, 26);
-         btnOpenExtractedFolder.TabIndex = 15;
+         btnOpenExtractedFolder.TabIndex = 14;
          btnOpenExtractedFolder.Text = "Open Extracted Folder";
          btnOpenExtractedFolder.UseVisualStyleBackColor = true;
          btnOpenExtractedFolder.Click += btnOpenExtractedFolder_Click;
@@ -243,7 +242,7 @@
          btnFindNext.Location = new Point(1161, 261);
          btnFindNext.Name = "btnFindNext";
          btnFindNext.Size = new Size(62, 26);
-         btnFindNext.TabIndex = 19;
+         btnFindNext.TabIndex = 17;
          btnFindNext.Text = "Next";
          btnFindNext.UseVisualStyleBackColor = true;
          btnFindNext.Click += btnFindNext_Click;
@@ -267,7 +266,7 @@
          cboxRemoveSitesFromDef.Location = new Point(884, 64);
          cboxRemoveSitesFromDef.Name = "cboxRemoveSitesFromDef";
          cboxRemoveSitesFromDef.Size = new Size(209, 23);
-         cboxRemoveSitesFromDef.TabIndex = 14;
+         cboxRemoveSitesFromDef.TabIndex = 9;
          cboxRemoveSitesFromDef.Text = "Remove Sites From Default";
          cboxRemoveSitesFromDef.UseVisualStyleBackColor = true;
          // 
@@ -280,7 +279,7 @@
          cboxRemoveTrackingQueries.Location = new Point(263, 8);
          cboxRemoveTrackingQueries.Name = "cboxRemoveTrackingQueries";
          cboxRemoveTrackingQueries.Size = new Size(192, 23);
-         cboxRemoveTrackingQueries.TabIndex = 21;
+         cboxRemoveTrackingQueries.TabIndex = 4;
          cboxRemoveTrackingQueries.Text = "remove tracking queries";
          cboxRemoveTrackingQueries.UseVisualStyleBackColor = true;
          // 
@@ -293,7 +292,7 @@
          checkBox1.Location = new Point(1103, 170);
          checkBox1.Name = "checkBox1";
          checkBox1.Size = new Size(192, 23);
-         checkBox1.TabIndex = 22;
+         checkBox1.TabIndex = 15;
          checkBox1.Text = "remove tracking queries";
          checkBox1.UseVisualStyleBackColor = true;
          // 
@@ -314,7 +313,7 @@
          cmbFindType.Location = new Point(1105, 324);
          cmbFindType.Name = "cmbFindType";
          cmbFindType.Size = new Size(186, 23);
-         cmbFindType.TabIndex = 24;
+         cmbFindType.TabIndex = 19;
          // 
          // lbFindType
          // 

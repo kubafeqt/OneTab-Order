@@ -35,6 +35,8 @@ namespace OneTab_Order
 
          cmbFindType.Items.AddRange(new string[] { "full line", "url only", "content only" });
          cmbFindType.SelectedIndex = 0;
+
+         rtbText.DetectUrls = false; //disable auto url detection
       }
 
       private void ReAddTabs(ref bool notRemoveEmptyEntries)
@@ -498,28 +500,28 @@ namespace OneTab_Order
             Find();
             e.SuppressKeyPress = true; //prevents bump sound
          }
+         if (e.KeyCode == Keys.Up) //find prev
+         {
+            Find(false);
+            e.SuppressKeyPress = true;
+         }
       }
 
       private void rtbText_KeyDown(object sender, KeyEventArgs e)
       {
          if (rtbText.SelectionLength > 0)
          {
-            if (e.KeyCode == Keys.Enter)
+            if (e.KeyCode == Keys.Enter) //find next
             {
                Find();
                e.SuppressKeyPress = true;
             }
-            if (e.KeyCode == Keys.Up)
+            if (e.KeyCode == Keys.Up) //find prev
             {
                Find(false);
                e.SuppressKeyPress = true;
             }
          }
-      }
-
-      private void rtbText_TextChanged(object sender, EventArgs e)
-      {
-         Tabs.TabsChanged = true;
       }
 
       private void Form1_KeyDown(object sender, KeyEventArgs e)
