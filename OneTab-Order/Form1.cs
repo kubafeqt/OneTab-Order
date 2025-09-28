@@ -288,217 +288,205 @@ namespace OneTab_Order
          Find(searchText);
       }
 
-      int lastSearchLine = -1;
       private void FindNext(string searchText)
       {
-         if (cmbFindType.SelectedItem.ToString() == "url only")
+         // Reset search if text changed
+         if (searchText != lastSearchText)
          {
-            while (true) // Smyčka pro hledání dalšího platného výskytu
-            {
-               // 1. Použij spolehlivé rtbText.Find() pro nalezení dalšího výskytu
-               int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
-
-               // Cyklické hledání: pokud nic nenajde, zkus od začátku
-               if (index == -1 && lastSearchPosition > 0)
-               {
-                  lastSearchPosition = 0;
-                  index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
-               }
-
-               // Pokud se nenašlo vůbec nic, ukonči hledání
-               if (index == -1)
-               {
-                  MessageBox.Show("Text nebyl nalezen.");
-                  lastSearchPosition = 0;
-                  break; // Ukončí while smyčku
-               }
-
-               // 2. Ověř, zda je nalezený výskyt platný (před pipe '|')
-               int lineStart = index;
-               while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\n')
-                  lineStart--;
-
-               int lineEnd = index;
-               while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\n')
-                  lineEnd++;
-
-               string lineText = rtbText.Text.Substring(lineStart, lineEnd - lineStart);
-               int pipeIndex = lineText.IndexOf('|');
-               int searchTextIndexInLine = index - lineStart;
-
-               // Pokud je výskyt platný (není pipe, nebo je výskyt před pipe)
-               if (pipeIndex == -1 || searchTextIndexInLine < pipeIndex)
-               {
-                  // 3. Označ celý řádek (stejně jako ve tvém funkčním kódu)
-                  rtbText.Select(lineStart, lineEnd - lineStart);
-                  rtbText.ScrollToCaret();
-                  rtbText.Focus();
-
-                  // Nastav pozici pro další hledání a ukonči smyčku
-                  lastSearchPosition = index + searchText.Length;
-                  break; // Ukončí while smyčku
-               }
-               else
-               {
-                  // Nalezený výskyt je neplatný (je za pipe), hledej dál
-                  lastSearchPosition = index + searchText.Length;
-                  // Smyčka 'while' automaticky pokračuje a hledá další výskyt
-               }
-            }
+            lastSearchText = searchText;
+            lastSearchPosition = 0;
          }
-         if (cmbFindType.SelectedItem.ToString() == "content only")
+
+         string searchMode = cmbFindType.SelectedItem.ToString();
+
+         // Start from current cursor/selection position if available
+         int startPos;
+         if (rtbText.SelectionLength > 0)
          {
-            while (true) // Smyčka pro hledání dalšího platného výskytu
-            {
-               // 1. Použij spolehlivé rtbText.Find() pro nalezení dalšího výskytu
-               int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
-
-               // Cyklické hledání: pokud nic nenajde, zkus od začátku
-               if (index == -1 && lastSearchPosition > 0)
-               {
-                  lastSearchPosition = 0;
-                  index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
-               }
-
-               // Pokud se nenašlo vůbec nic, ukonči hledání
-               if (index == -1)
-               {
-                  MessageBox.Show("Text nebyl nalezen v obsahu (za '|').");
-                  lastSearchPosition = 0;
-                  break; // Ukončí while smyčku
-               }
-
-               // 2. Ověř, zda je nalezený výskyt platný (až za pipe '|')
-               int lineStart = index;
-               while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\n')
-                  lineStart--;
-
-               int lineEnd = index;
-               while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\n')
-                  lineEnd++;
-
-               string lineText = rtbText.Text.Substring(lineStart, lineEnd - lineStart);
-               int pipeIndex = lineText.IndexOf('|');
-               int searchTextIndexInLine = index - lineStart;
-
-               // Pokud je výskyt platný (existuje pipe A výskyt je až za ním)
-               if (pipeIndex != -1 && searchTextIndexInLine > pipeIndex)
-               {
-                  // 3. Označ celý řádek (spolehlivá metoda)
-                  rtbText.Select(lineStart, lineEnd - lineStart);
-                  rtbText.ScrollToCaret();
-                  rtbText.Focus();
-
-                  // Nastav pozici pro další hledání a ukonči smyčku
-                  lastSearchPosition = index + searchText.Length;
-                  break; // Ukončí while smyčku
-               }
-               else
-               {
-                  // Nalezený výskyt je neplatný (před pipe nebo pipe neexistuje), hledej dál
-                  lastSearchPosition = index + searchText.Length;
-                  // Smyčka 'while' automaticky pokračuje a hledá další výskyt
-               }
-            }
+            // If text is selected, start from end of selection
+            startPos = rtbText.SelectionStart + rtbText.SelectionLength;
          }
-         if (cmbFindType.SelectedItem.ToString() == "full line")
+         else
          {
-            // Najde výskyt až za poslední pozicí
-            int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
+            // If no selection, use cursor position or previous search position
+            startPos = rtbText.SelectionStart > 0 ? rtbText.SelectionStart : lastSearchPosition;
+         }
 
-            if (index == -1 && lastSearchPosition > 0)
+         bool found = false;
+
+         while (!found)
+         {
+            // Find next occurrence
+            int index = rtbText.Find(searchText, startPos, RichTextBoxFinds.None);
+
+            // Try from beginning if not found
+            if (index == -1 && startPos > 0)
             {
-               // Začít od začátku textu (cyklické hledání)
+               startPos = 0;
                index = rtbText.Find(searchText, 0, RichTextBoxFinds.None);
             }
 
-            if (index != -1)
+            // Nothing found at all
+            if (index == -1)
             {
-               // Najde začátek a konec logického řádku (jako dřív)
-               int lineStart = index;
-               int lineEnd = index;
+               MessageBox.Show($"Text nebyl nalezen{(searchMode == "content only" ? " v obsahu (za '|')" : "")}.");
+               lastSearchPosition = 0;
+               break;
+            }
 
-               while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
-                  lineStart--;
+            // Find line boundaries
+            int lineStart = index;
+            while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\n' && rtbText.Text[lineStart - 1] != '\r')
+               lineStart--;
 
-               while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
-                  lineEnd++;
+            int lineEnd = index;
+            while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\n' && rtbText.Text[lineEnd] != '\r')
+               lineEnd++;
 
-               if (lineEnd < rtbText.Text.Length - 1 && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
+            // Handle line ending characters
+            if (lineEnd < rtbText.Text.Length)
+            {
+               if (lineEnd + 1 < rtbText.Text.Length && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
                   lineEnd += 2;
-               else if (lineEnd < rtbText.Text.Length && (rtbText.Text[lineEnd] == '\r' || rtbText.Text[lineEnd] == '\n'))
+               else
                   lineEnd += 1;
+            }
 
+            // Get line text and check if match is valid based on search mode
+            string lineText = rtbText.Text.Substring(lineStart, Math.Min(lineEnd, rtbText.Text.Length) - lineStart);
+            int pipeIndex = lineText.IndexOf('|');
+            int matchPosInLine = index - lineStart;
+
+            bool isValidMatch = false;
+
+            switch (searchMode)
+            {
+               case "url only":
+                  isValidMatch = (pipeIndex == -1 || matchPosInLine < pipeIndex);
+                  break;
+               case "content only":
+                  isValidMatch = (pipeIndex != -1 && matchPosInLine > pipeIndex);
+                  break;
+               case "full line":
+                  isValidMatch = true;
+                  break;
+            }
+
+            if (isValidMatch)
+            {
+               // Select the line and set up for next search
                rtbText.Select(lineStart, lineEnd - lineStart);
                rtbText.ScrollToCaret();
                rtbText.Focus();
-
-               // Nastaví lastSearchPosition na první znak za nalezeným textem
                lastSearchPosition = index + searchText.Length;
+               found = true;
             }
             else
             {
-               MessageBox.Show("Text nebyl nalezen.");
-               lastSearchPosition = 0;
+               // Continue searching from after this occurrence
+               startPos = index + searchText.Length;
             }
          }
       }
 
       private void FindPrev(string searchText)
       {
-         if (cmbFindType.SelectedItem.ToString() != "full line" && (!Tabs.TabsAdded || Tabs.TabsChanged))
+         // Reset search if text changed
+         if (searchText != lastSearchText)
          {
-            bool notRemoveEmptyEntries = false;
-            ReAddTabs(ref notRemoveEmptyEntries);
+            lastSearchText = searchText;
+            // For reverse search, start from the end when resetting
+            lastSearchPosition = rtbText.TextLength;
          }
-         if (cmbFindType.SelectedItem.ToString() == "url only")
+
+         // Start from current cursor/selection position if available
+         int startPos;
+         if (rtbText.SelectionLength > 0)
          {
-            MessageBox.Show("Not implemented yet.");
+            // If text is selected, start from beginning of selection
+            startPos = rtbText.SelectionStart;
          }
-         if (cmbFindType.SelectedItem.ToString() == "content only")
+         else
          {
-            MessageBox.Show("Not implemented yet.");
+            // If no selection, use cursor position or previous search position
+            startPos = rtbText.SelectionStart > 0 ? rtbText.SelectionStart : lastSearchPosition;
          }
-         if (cmbFindType.SelectedItem.ToString() == "full line")
+
+         string searchMode = cmbFindType.SelectedItem.ToString();
+         bool found = false;
+
+         while (!found)
          {
-            // Reset pozice při změně hledaného textu
-            if (searchText != lastSearchText)
+            // Find previous occurrence
+            int index = rtbText.Find(searchText, 0, startPos, RichTextBoxFinds.Reverse);
+
+            // Try from the end if not found
+            if (index == -1 && startPos < rtbText.TextLength)
             {
-               lastSearchText = searchText;
-               lastSearchPosition = rtbText.TextLength;
+               startPos = rtbText.TextLength;
+               index = rtbText.Find(searchText, 0, startPos, RichTextBoxFinds.Reverse);
             }
 
-            // Najdi předchozí výskyt (od pozice před current lastSearchPosition)
-            int start = Math.Max(0, lastSearchPosition - 1);
-            int index = rtbText.Find(searchText, 0, start, RichTextBoxFinds.Reverse);
-
-            if (index != -1)
+            // Nothing found at all
+            if (index == -1)
             {
-               // Najdi začátek a konec logického řádku (jako dříve)
-               int lineStart = index;
-               int lineEnd = index;
+               MessageBox.Show($"Text nebyl nalezen{(searchMode == "content only" ? " v obsahu (za '|')" : "")}.");
+               lastSearchPosition = rtbText.TextLength;
+               break;
+            }
 
-               while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
-                  lineStart--;
+            // Find line boundaries
+            int lineStart = index;
+            while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\n' && rtbText.Text[lineStart - 1] != '\r')
+               lineStart--;
 
-               while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
-                  lineEnd++;
+            int lineEnd = index;
+            while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\n' && rtbText.Text[lineEnd] != '\r')
+               lineEnd++;
 
-               if (lineEnd < rtbText.Text.Length - 1 && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
+            // Handle line ending characters
+            if (lineEnd < rtbText.Text.Length)
+            {
+               if (lineEnd + 1 < rtbText.Text.Length && rtbText.Text[lineEnd] == '\r' && rtbText.Text[lineEnd + 1] == '\n')
                   lineEnd += 2;
-               else if (lineEnd < rtbText.Text.Length && (rtbText.Text[lineEnd] == '\r' || rtbText.Text[lineEnd] == '\n'))
+               else
                   lineEnd += 1;
+            }
 
+            // Get line text and check if match is valid based on search mode
+            string lineText = rtbText.Text.Substring(lineStart, Math.Min(lineEnd, rtbText.Text.Length) - lineStart);
+            int pipeIndex = lineText.IndexOf('|');
+            int matchPosInLine = index - lineStart;
+
+            bool isValidMatch = false;
+
+            switch (searchMode)
+            {
+               case "url only":
+                  isValidMatch = (pipeIndex == -1 || matchPosInLine < pipeIndex);
+                  break;
+               case "content only":
+                  isValidMatch = (pipeIndex != -1 && matchPosInLine > pipeIndex);
+                  break;
+               case "full line":
+                  isValidMatch = true;
+                  break;
+            }
+
+            if (isValidMatch)
+            {
+               // Select the line and set up for next search
                rtbText.Select(lineStart, lineEnd - lineStart);
                rtbText.ScrollToCaret();
                rtbText.Focus();
-
                lastSearchPosition = index;
+               found = true;
             }
             else
             {
-               MessageBox.Show("Text nebyl nalezen.");
-               lastSearchPosition = rtbText.TextLength;
+               // Continue searching from before this occurrence
+               startPos = index;
+               if (startPos <= 0) break; // Prevent infinite loop
             }
          }
       }
