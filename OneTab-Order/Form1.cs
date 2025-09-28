@@ -179,6 +179,18 @@ namespace OneTab_Order
              i == 0 ? block : new[] { "" }.Concat(block)
          ).ToList();
 
+         if (cboxExtractedRemoveTrackingQueries.Checked)
+         {
+            var beforeCount = lines.Count(line => !string.IsNullOrWhiteSpace(line));
+            Tabs.RemoveTrackingQueriesFromLines(lines);
+            var afterCount = lines.Count(line => !string.IsNullOrWhiteSpace(line));
+            var removedCount = beforeCount - afterCount;
+            lbTrackingQueriesRemoved.Text = $"Tracking queries removed: {removedCount}";
+         }
+         else
+         {
+            lbTrackingQueriesRemoved.Text = $"Tracking queries removed: 0";
+         }
          if (cboxRemoveDuplicatesExtracted.Checked)
          {
             // Použijeme naši novou metodu

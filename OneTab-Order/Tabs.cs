@@ -9,7 +9,7 @@ namespace OneTab_Order
 {
    internal class Tabs
    {
-      public static List<string> TrackingQueries = new List<string>
+      public static HashSet<string> TrackingQueries = new HashSet<string>
       {
           "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
           "gclid", "fbclid", "mc_cid", "mc_eid", "ref", "referrer", "ref_src",
@@ -50,38 +50,6 @@ namespace OneTab_Order
           "ga_content_id", "ga_tracker", "ga_term_id", "ga_device_id", "ga_source_id", "ga_ref_id",
           "ga_network_id", "ga_matchtype_id", "ga_adgroup_id", "ga_ad_id", "ga_medium_id"
       };
-
-      public static int trackingQueriesRemoved;
-      public static void RemoveTrackingQueries()
-      {
-         trackingQueriesRemoved = 0;
-         foreach (var tab in TabList)
-         {
-            bool queryRemoved; // Flag to track if a query is removed
-            do
-            {
-               queryRemoved = false;
-               foreach (var query in TrackingQueries)
-               {
-                  int queryIndex = tab.Url.IndexOf($"?{query}=", StringComparison.OrdinalIgnoreCase);
-                  if (queryIndex == -1)
-                  {
-                     queryIndex = tab.Url.IndexOf($"&{query}=", StringComparison.OrdinalIgnoreCase);
-                  }
-                  if (queryIndex != -1)
-                  {
-                     tab.Url = tab.Url.Substring(0, queryIndex);
-                     // Optionally trim any trailing '?' or '&' if they are left at the end
-                     tab.Url = tab.Url.TrimEnd('?', '&');
-                     trackingQueriesRemoved++;
-                     queryRemoved = true; // Mark that a query was removed
-                     break; // Break out of the inner loop to start over
-                  }
-               }
-            }
-            while (queryRemoved); // Repeat until no queries are removed in the last pass
-         }
-      }
 
       public static List<Tabs> TabList = new List<Tabs>();
       public static int RemovedDuplicates = 0;
@@ -214,6 +182,67 @@ namespace OneTab_Order
 
       public static IEnumerable<IGrouping<string, Tabs>> GroupTabs() => TabList.GroupBy(t => new Uri(t.Url).Host);
 
+      public static int trackingQueriesRemoved;
+      public static void RemoveTrackingQueries()
+      {
+         trackingQueriesRemoved = 0;
+         foreach (var tab in TabList)
+         {
+            bool queryRemoved; // Flag to track if a query is removed
+            do
+            {
+               queryRemoved = false;
+               foreach (var query in TrackingQueries)
+               {
+                  int queryIndex = tab.Url.IndexOf($"?{query}=", StringComparison.OrdinalIgnoreCase);
+                  if (queryIndex == -1)
+                  {
+                     queryIndex = tab.Url.IndexOf($"&{query}=", StringComparison.OrdinalIgnoreCase);
+                  }
+                  if (queryIndex != -1)
+                  {
+                     tab.Url = tab.Url.Substring(0, queryIndex);
+                     // Optionally trim any trailing '?' or '&' if they are left at the end
+                     tab.Url = tab.Url.TrimEnd('?', '&');
+                     trackingQueriesRemoved++;
+                     queryRemoved = true; // Mark that a query was removed
+                     break; // Break out of the inner loop to start over
+                  }
+               }
+            }
+            while (queryRemoved); // Repeat until no queries are removed in the last pass
+         }
+      }
+
+      public static void RemoveTrackingQueriesFromLines(List<string> lines)
+      {
+         for (int i = 0; i < lines.Count; i++) // Iterate using indices
+         {
+            bool queryRemoved;
+            do
+            {
+               queryRemoved = false;
+               foreach (var query in TrackingQueries)
+               {
+                  int queryIndex = lines[i].IndexOf($"?{query}=", StringComparison.OrdinalIgnoreCase);
+                  if (queryIndex == -1)
+                  {
+                     queryIndex = lines[i].IndexOf($"&{query}=", StringComparison.OrdinalIgnoreCase);
+                  }
+                  if (queryIndex != -1)
+                  {
+                     lines[i] = lines[i].Substring(0, queryIndex);
+                     // Optionally trim any trailing '?' or '&' if left at the end
+                     lines[i] = lines[i].TrimEnd('?', '&');
+                     trackingQueriesRemoved++;
+                     queryRemoved = true; // A query was removed, so continue checking
+                     break; // Restart the inner loop to recheck for more queries
+                  }
+               }
+            }
+            while (queryRemoved); // Repeat until no queries are removed in the current string
+         }
+      }
 
    }
 }
