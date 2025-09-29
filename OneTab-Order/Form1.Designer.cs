@@ -61,9 +61,9 @@
          // rtbText
          // 
          rtbText.Font = new Font("Consolas", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-         rtbText.Location = new Point(22, 106);
+         rtbText.Location = new Point(22, 111);
          rtbText.Name = "rtbText";
-         rtbText.Size = new Size(1071, 636);
+         rtbText.Size = new Size(1071, 631);
          rtbText.TabIndex = 0;
          rtbText.Text = "";
          rtbText.KeyDown += rtbText_KeyDown;
@@ -71,7 +71,7 @@
          // btnOrder
          // 
          btnOrder.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         btnOrder.Location = new Point(35, 57);
+         btnOrder.Location = new Point(35, 58);
          btnOrder.Name = "btnOrder";
          btnOrder.Size = new Size(94, 35);
          btnOrder.TabIndex = 1;
@@ -83,7 +83,7 @@
          // 
          lbRemovedDuplicates.AutoSize = true;
          lbRemovedDuplicates.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbRemovedDuplicates.Location = new Point(548, 60);
+         lbRemovedDuplicates.Location = new Point(548, 62);
          lbRemovedDuplicates.Name = "lbRemovedDuplicates";
          lbRemovedDuplicates.Size = new Size(167, 21);
          lbRemovedDuplicates.TabIndex = 2;
@@ -93,7 +93,7 @@
          // 
          btnCopyAllRtb.Enabled = false;
          btnCopyAllRtb.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         btnCopyAllRtb.Location = new Point(141, 58);
+         btnCopyAllRtb.Location = new Point(141, 59);
          btnCopyAllRtb.Name = "btnCopyAllRtb";
          btnCopyAllRtb.Size = new Size(94, 35);
          btnCopyAllRtb.TabIndex = 2;
@@ -332,7 +332,7 @@
          // 
          lbTrackingQueriesRemoved.AutoSize = true;
          lbTrackingQueriesRemoved.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbTrackingQueriesRemoved.Location = new Point(548, 81);
+         lbTrackingQueriesRemoved.Location = new Point(548, 84);
          lbTrackingQueriesRemoved.Name = "lbTrackingQueriesRemoved";
          lbTrackingQueriesRemoved.Size = new Size(203, 21);
          lbTrackingQueriesRemoved.TabIndex = 26;
@@ -342,7 +342,7 @@
          // 
          btnSaveToFile.Enabled = false;
          btnSaveToFile.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         btnSaveToFile.Location = new Point(141, 10);
+         btnSaveToFile.Location = new Point(141, 11);
          btnSaveToFile.Name = "btnSaveToFile";
          btnSaveToFile.Size = new Size(94, 39);
          btnSaveToFile.TabIndex = 27;
@@ -353,7 +353,7 @@
          // btnOpenSavedFolder
          // 
          btnOpenSavedFolder.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
-         btnOpenSavedFolder.Location = new Point(35, 8);
+         btnOpenSavedFolder.Location = new Point(35, 9);
          btnOpenSavedFolder.Name = "btnOpenSavedFolder";
          btnOpenSavedFolder.Size = new Size(94, 41);
          btnOpenSavedFolder.TabIndex = 28;

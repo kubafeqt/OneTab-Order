@@ -48,7 +48,7 @@ namespace OneTab_Order
           "action_term", "action_platform", "conversion_id", "conversion_label", "conversion_name",
           "pixel_id", "fbclid_source", "ga_session_id", "ga_user_id", "ga_campaign_id",
           "ga_content_id", "ga_tracker", "ga_term_id", "ga_device_id", "ga_source_id", "ga_ref_id",
-          "ga_network_id", "ga_matchtype_id", "ga_adgroup_id", "ga_ad_id", "ga_medium_id"
+          "ga_network_id", "ga_matchtype_id", "ga_adgroup_id", "ga_ad_id", "ga_medium_id", "pp"
       };
 
       public static List<Tabs> TabList = new List<Tabs>();
