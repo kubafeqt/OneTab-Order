@@ -52,7 +52,8 @@ namespace OneTab_Order
       };
 
       public static List<Tabs> TabList = new List<Tabs>();
-      public static int RemovedDuplicates = 0;
+      public static int removedDuplicates = 0;
+      public static int trackingQueriesRemoved;
       //public static bool TabsAdded = false;
       //public static bool TabsChanged = false;
 
@@ -135,7 +136,7 @@ namespace OneTab_Order
 
          if (TabList == null || TabList.Count == 0)
          {
-            RemovedDuplicates = 0;
+            removedDuplicates = 0;
             return;
          }
 
@@ -166,7 +167,7 @@ namespace OneTab_Order
          if (mode == DuplicateRemoveMode.KeepLast)
             newList.Reverse();
 
-         RemovedDuplicates = TabList.Count - newList.Count;
+         removedDuplicates = TabList.Count - newList.Count;
          TabList = newList;
       }
 
@@ -182,7 +183,6 @@ namespace OneTab_Order
 
       public static IEnumerable<IGrouping<string, Tabs>> GroupTabs() => TabList.GroupBy(t => new Uri(t.Url).Host);
 
-      public static int trackingQueriesRemoved;
       public static void RemoveTrackingQueries()
       {
          trackingQueriesRemoved = 0;

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
+using static System.Windows.Forms.LinkLabel;
 
 #region comments
 
@@ -99,13 +100,30 @@ namespace OneTab_Order
             }
          }
 
-         lbRemovedDuplicates.Text = $"Removed duplicates: {Tabs.RemovedDuplicates}";
+         lbRemovedDuplicates.Text = $"Removed duplicates: {Tabs.removedDuplicates}";
       }
 
       private void btnCopyAllRtb_Click(object sender, EventArgs e)
       {
          Clipboard.SetText(rtbText.Text);
          SwitchButtonEnabled(btnCopyAllRtb, false);
+      }
+
+      private void btnSaveToFile_Click(object sender, EventArgs e)
+      {
+         string[] lines = rtbText.Text.Split("\n");
+         // Uložení do souboru
+         var saveFileDialog = new SaveFileDialog();
+         saveFileDialog.Filter = "Textové soubory (*.txt)|*.txt|Všechny soubory (*.*)|*.*";
+         saveFileDialog.Title = "Uložit exportovaný OneTab weby";
+         string folderPath = MakePath("saved");
+         saveFileDialog.InitialDirectory = folderPath;
+         if (saveFileDialog.ShowDialog() == DialogResult.OK)
+         {
+            File.WriteAllLines(saveFileDialog.FileName, lines);
+            MessageBox.Show("Soubor byl úspěšně uložen.", "Hotovo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+         }
       }
 
       private void Timer_Tick(object sender, EventArgs e)
@@ -121,6 +139,19 @@ namespace OneTab_Order
             {
                SwitchButtonEnabled(btnCopyAllRtb, false);
             }
+         }
+         if (string.IsNullOrWhiteSpace(rtbText.Text))
+         {
+            SwitchButtonEnabled(btnOrder, false);
+            SwitchButtonEnabled(btnSaveToFile, false);
+            SwitchButtonEnabled(btnExtractWebpages, false);
+            SwitchButtonEnabled(btnCopyAllRtb, false);
+         }
+         else
+         {
+            SwitchButtonEnabled(btnOrder, true);
+            SwitchButtonEnabled(btnSaveToFile, true);
+            SwitchButtonEnabled(btnExtractWebpages, true);
          }
       }
 
@@ -210,7 +241,7 @@ namespace OneTab_Order
          var saveFileDialog = new SaveFileDialog();
          saveFileDialog.Filter = "Textové soubory (*.txt)|*.txt|Všechny soubory (*.*)|*.*";
          saveFileDialog.Title = "Uložit extrahované weby";
-         string folderPath = MakeExportsPath();
+         string folderPath = MakePath("exports");
          saveFileDialog.InitialDirectory = folderPath;
          if (saveFileDialog.ShowDialog() == DialogResult.OK)
          {
@@ -263,20 +294,30 @@ namespace OneTab_Order
          btnOrder.Text = cboxRemoveOnly.Checked ? "remove" : "order";
       }
 
+      private void btnOpenSavedFile_Click(object sender, EventArgs e)
+      {
+         OpenFolder("saved");
+      }
+
       private void btnOpenExtractedFolder_Click(object sender, EventArgs e)
       {
-         string exportsPath = MakeExportsPath();
+         OpenFolder("exports");
+      }
+
+      private void OpenFolder(string folderName)
+      {
+         string folderPath = MakePath(folderName);
          var psi = new ProcessStartInfo
          {
-            FileName = exportsPath,
+            FileName = folderPath,
             UseShellExecute = true
          };
          Process.Start(psi);
       }
 
-      private string MakeExportsPath()
+      private string MakePath(string folderName)
       {
-         string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "exports");
+         string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, folderName);
          if (!Directory.Exists(folderPath))
          {
             Directory.CreateDirectory(folderPath);
@@ -550,7 +591,6 @@ namespace OneTab_Order
             e.SuppressKeyPress = true; // Prevent the default behavior
          }
       }
-
 
    }
 }
