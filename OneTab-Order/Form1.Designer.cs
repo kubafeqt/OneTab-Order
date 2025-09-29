@@ -359,7 +359,7 @@
          btnOpenSavedFolder.TabIndex = 28;
          btnOpenSavedFolder.Text = "open saved folder";
          btnOpenSavedFolder.UseVisualStyleBackColor = true;
-         btnOpenSavedFolder.Click += btnOpenSavedFile_Click;
+         btnOpenSavedFolder.Click += btnOpenSavedFolder_Click;
          // 
          // Form1
          // 

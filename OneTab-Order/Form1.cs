@@ -294,7 +294,8 @@ namespace OneTab_Order
          btnOrder.Text = cboxRemoveOnly.Checked ? "remove" : "order";
       }
 
-      private void btnOpenSavedFile_Click(object sender, EventArgs e)
+      #region opening and making folders
+      private void btnOpenSavedFolder_Click(object sender, EventArgs e)
       {
          OpenFolder("saved");
       }
@@ -324,6 +325,10 @@ namespace OneTab_Order
          }
          return folderPath;
       }
+
+      #endregion
+
+      #region searching text
 
       private int lastSearchPosition = 0;
       private string lastSearchText = "";
@@ -591,6 +596,8 @@ namespace OneTab_Order
             e.SuppressKeyPress = true; // Prevent the default behavior
          }
       }
+
+      #endregion
 
    }
 }
