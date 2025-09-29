@@ -212,11 +212,8 @@ namespace OneTab_Order
 
          if (cboxExtractedRemoveTrackingQueries.Checked)
          {
-            var beforeCount = lines.Count(line => !string.IsNullOrWhiteSpace(line));
             Tabs.RemoveTrackingQueriesFromLines(lines);
-            var afterCount = lines.Count(line => !string.IsNullOrWhiteSpace(line));
-            var removedCount = beforeCount - afterCount;
-            lbTrackingQueriesRemoved.Text = $"Tracking queries removed: {removedCount}";
+            lbTrackingQueriesRemoved.Text = $"Tracking queries removed: {Tabs.trackingQueriesRemoved}";
          }
          else
          {

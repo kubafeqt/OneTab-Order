@@ -183,6 +183,9 @@ namespace OneTab_Order
 
       public static IEnumerable<IGrouping<string, Tabs>> GroupTabs() => TabList.GroupBy(t => new Uri(t.Url).Host);
 
+      /// <summary>
+      /// Remove tracking queries from TabList
+      /// </summary>
       public static void RemoveTrackingQueries()
       {
          trackingQueriesRemoved = 0;
@@ -201,9 +204,21 @@ namespace OneTab_Order
                   }
                   if (queryIndex != -1)
                   {
-                     tab.Url = tab.Url.Substring(0, queryIndex);
+                     //tab.Url = tab.Url.Substring(0, queryIndex);
                      // Optionally trim any trailing '?' or '&' if they are left at the end
-                     tab.Url = tab.Url.TrimEnd('?', '&');
+                     int pipeIndex = tab.Url.IndexOf('|');
+                     if (pipeIndex >= 0)
+                     {
+                        // Split into two parts: before and after '|'
+                        string before = $"{tab.Url.Substring(0, queryIndex)} ";
+                        string after = tab.Url.Substring(pipeIndex);  // includes '|'
+                        tab.Url = before + after;
+                     }
+                     else
+                     {
+                        // If '|' is not present, trim the entire string as usual
+                        tab.Url = tab.Url.Substring(0, queryIndex).TrimEnd('?', '&');
+                     }
                      trackingQueriesRemoved++;
                      queryRemoved = true; // Mark that a query was removed
                      break; // Break out of the inner loop to start over
@@ -214,8 +229,13 @@ namespace OneTab_Order
          }
       }
 
+      /// <summary>
+      /// Removes tracking queries from a list of strings (each string represents a tab entry). - Used when extract selected tabs to file.
+      /// </summary>
+      /// <param name="lines">List of selected tabs (urls) lines.</param>
       public static void RemoveTrackingQueriesFromLines(List<string> lines)
       {
+         trackingQueriesRemoved = 0;
          for (int i = 0; i < lines.Count; i++) // Iterate using indices
          {
             bool queryRemoved;
@@ -231,9 +251,21 @@ namespace OneTab_Order
                   }
                   if (queryIndex != -1)
                   {
-                     lines[i] = lines[i].Substring(0, queryIndex);
+                     //lines[i] = lines[i].Substring(0, queryIndex);
                      // Optionally trim any trailing '?' or '&' if left at the end
-                     lines[i] = lines[i].TrimEnd('?', '&');
+                     int pipeIndex = lines[i].IndexOf('|');
+                     if (pipeIndex >= 0)
+                     {
+                        // Rozdělíme na dvě části: před '|' a po '|'
+                        string after = lines[i].Substring(pipeIndex); // včetně '|'
+                        string before = $"{lines[i].Substring(0, queryIndex)} ";
+                        lines[i] = before + after;
+                     }
+                     else
+                     {
+                        // Pokud '|' není ve větě, trimujeme celý řetězec jako původně
+                        lines[i] = lines[i].Substring(0, queryIndex).TrimEnd('?', '&');
+                     }
                      trackingQueriesRemoved++;
                      queryRemoved = true; // A query was removed, so continue checking
                      break; // Restart the inner loop to recheck for more queries
