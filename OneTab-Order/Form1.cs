@@ -8,7 +8,8 @@ using System.DirectoryServices.ActiveDirectory;
 //remove duplicates from extracted, even in rtbText -> basic now (not rtbText)
 //searching - builded in finder - get shortcut ctrl+f -> basic now
 //
-//delete all from and after - &/?pp=, &/?utm, &/?fbclid, - check other tracking queries -> delete tracking queries checkbox
+//delete all from and after - &/?pp=, &/?utm, &/?fbclid, - check other tracking queries -> remove tracking queries checkbox
+//
 //
 
 #endregion
@@ -21,6 +22,8 @@ namespace OneTab_Order
       public Form1()
       {
          InitializeComponent();
+         this.KeyPreview = true; // Formulář dostane všechny key eventy jako první
+
          timer.Interval = 100; //100 ms
          timer.Tick += Timer_Tick;
          timer.Start();
@@ -36,7 +39,7 @@ namespace OneTab_Order
 
       private void ReAddTabs(ref bool notRemoveEmptyEntries)
       {
-         notRemoveEmptyEntries = !notRemoveEmptyEntries ? cboxRemoveDuplicatesOnly.Checked : notRemoveEmptyEntries; //true = true
+         notRemoveEmptyEntries = !notRemoveEmptyEntries ? cboxRemoveOnly.Checked : notRemoveEmptyEntries; //true = true
          Tabs.TabList.Clear(); //důležitý
          Tabs.AddTabs(rtbText.Text, notRemoveEmptyEntries);
       }
@@ -51,7 +54,7 @@ namespace OneTab_Order
          bool notRemoveEmptyEntries = false;
          ReAddTabs(ref notRemoveEmptyEntries);
 
-         if (!cboxRemoveDuplicatesOnly.Checked)
+         if (!cboxRemoveOnly.Checked)
          {
             Tabs.OrderTabs();
          }
@@ -238,7 +241,7 @@ namespace OneTab_Order
 
       private void cboxRemoveDuplicatesOnly_CheckedChanged(object sender, EventArgs e)
       {
-         btnOrder.Text = cboxRemoveDuplicatesOnly.Checked ? "remove" : "order";
+         btnOrder.Text = cboxRemoveOnly.Checked ? "remove" : "order";
       }
 
       private void btnOpenExtractedFolder_Click(object sender, EventArgs e)
@@ -287,18 +290,93 @@ namespace OneTab_Order
 
       private void FindNext(string searchText)
       {
-         if (cmbFindType.SelectedItem.ToString() != "full line" && (!Tabs.TabsAdded || Tabs.TabsChanged))
-         {
-            bool notRemoveEmptyEntries = false;
-            ReAddTabs(ref notRemoveEmptyEntries);
-         }
+         //if (cmbFindType.SelectedItem.ToString() != "full line" && (!Tabs.TabsAdded || Tabs.TabsChanged))
+         //{
+         //   bool notRemoveEmptyEntries = false;
+         //   ReAddTabs(ref notRemoveEmptyEntries);
+         //}
          if (cmbFindType.SelectedItem.ToString() == "url only")
          {
+            int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
 
+            if (index == -1 && lastSearchPosition > 0)
+            {
+               // Cyclic search
+               index = rtbText.Find(searchText, 0, RichTextBoxFinds.None);
+            }
+
+            if (index != -1)
+            {
+               // Najít začátek a konec logického řádku
+               int lineStart = index;
+               int lineEnd = index;
+
+               while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
+                  lineStart--;
+
+               while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
+                  lineEnd++;
+
+               rtbText.Select(lineStart, lineEnd - lineStart);
+               rtbText.ScrollToCaret();
+               rtbText.Focus();
+
+               lastSearchPosition = index + searchText.Length;
+            }
+            else
+            {
+               MessageBox.Show("Text nebyl nalezen.");
+               lastSearchPosition = 0;
+            }
          }
          if (cmbFindType.SelectedItem.ToString() == "content only")
          {
+            int index = rtbText.Find(searchText, lastSearchPosition, RichTextBoxFinds.None);
 
+            if (index == -1 && lastSearchPosition > 0)
+            {
+               // Cyclic search
+               index = rtbText.Find(searchText, 0, RichTextBoxFinds.None);
+            }
+
+            if (index != -1)
+            {
+               // Find line boundaries
+               int lineStart = index;
+               int lineEnd = index;
+
+               while (lineStart > 0 && rtbText.Text[lineStart - 1] != '\r' && rtbText.Text[lineStart - 1] != '\n')
+                  lineStart--;
+
+               while (lineEnd < rtbText.Text.Length && rtbText.Text[lineEnd] != '\r' && rtbText.Text[lineEnd] != '\n')
+                  lineEnd++;
+
+               // Get the line text
+               string line = rtbText.Text.Substring(lineStart, lineEnd - lineStart);
+               int pipeIndexInLine = line.IndexOf('|');
+
+               if (pipeIndexInLine != -1 && pipeIndexInLine < line.Length - 1)
+               {
+                  int selectStart = lineStart + pipeIndexInLine + 1; // after the pipe
+                  int selectLength = line.Length - pipeIndexInLine - 1;
+                  rtbText.Select(selectStart, selectLength);
+               }
+               else
+               {
+                  // No pipe found or nothing after pipe, select nothing or handle as needed
+                  rtbText.Select(lineEnd, 0);
+               }
+
+               rtbText.ScrollToCaret();
+               rtbText.Focus();
+
+               lastSearchPosition = index + searchText.Length;
+            }
+            else
+            {
+               MessageBox.Show("Text nebyl nalezen.");
+               lastSearchPosition = 0;
+            }
          }
          if (cmbFindType.SelectedItem.ToString() == "full line")
          {
@@ -352,11 +430,11 @@ namespace OneTab_Order
          }
          if (cmbFindType.SelectedItem.ToString() == "url only")
          {
-
+            MessageBox.Show("Not implemented yet.");
          }
          if (cmbFindType.SelectedItem.ToString() == "content only")
          {
-
+            MessageBox.Show("Not implemented yet.");
          }
          if (cmbFindType.SelectedItem.ToString() == "full line")
          {
@@ -420,7 +498,7 @@ namespace OneTab_Order
                Find();
                e.SuppressKeyPress = true;
             }
-            if (e.KeyCode == Keys.Up) //not working correctly
+            if (e.KeyCode == Keys.Up)
             {
                Find(false);
                e.SuppressKeyPress = true;
@@ -431,6 +509,16 @@ namespace OneTab_Order
       private void rtbText_TextChanged(object sender, EventArgs e)
       {
          Tabs.TabsChanged = true;
+      }
+
+      private void Form1_KeyDown(object sender, KeyEventArgs e)
+      {
+         if (e.Control && e.KeyCode == Keys.F) // Detect Ctrl+F
+         {
+            tbFind.Focus();
+            tbFind.SelectAll();
+            e.SuppressKeyPress = true; // Prevent the default behavior
+         }
       }
    }
 }
