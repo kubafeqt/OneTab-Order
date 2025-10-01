@@ -38,6 +38,46 @@ namespace OneTab_Order
          cmbFindType.SelectedIndex = 0;
 
          rtbText.DetectUrls = false; //disable auto url detection
+
+         LoadPanelsSizeAndLocation();
+         SwitchPanelVisible(panelMain);
+      }
+
+      private void LoadPanelsSizeAndLocation()
+      {
+         foreach (Panel panel in Controls.OfType<Panel>())
+         {
+            panel.Size = Settings.panelSize;
+            panel.Location = Settings.panelLocation;
+         }
+      }
+
+      private void SwitchPanelVisible(Panel panelToShow)
+      {
+         Dictionary<Panel, Button> panelButtonMap = new Dictionary<Panel, Button>()
+         {
+            { panelMain, btnMainPanel },
+            { panelRPASettings, btnRPASettings }
+         };
+
+         foreach (Panel panel in Controls.OfType<Panel>())
+         {
+            panel.Visible = false;
+            panelButtonMap[panel].Enabled = true;
+         }
+         panelToShow.Visible = true;
+         panelButtonMap[panelToShow].Enabled = false;
+         Refresh();
+      }
+
+      private void btnMainPanel_Click(object sender, EventArgs e)
+      {
+         SwitchPanelVisible(panelMain);
+      }
+
+      private void btnRPASettings_Click(object sender, EventArgs e)
+      {
+         SwitchPanelVisible(panelRPASettings);
       }
 
       private void ReAddTabs(ref bool notRemoveEmptyEntries)
@@ -279,11 +319,23 @@ namespace OneTab_Order
          }
       }
 
+      Point drawlineX = new Point(519, 519);
+      Point drawlineY = new Point(0, 200);
       private void Form1_Paint(object sender, PaintEventArgs e)
       {
          Graphics gfx = e.Graphics;
+         if (panelMain.Visible)
+         {
+            Pen penBlack = new Pen(Brushes.Black, 2);
+            gfx.DrawLine(penBlack, panelMain.Location.X + drawlineX.X, drawlineY.X, panelMain.Location.X + drawlineX.Y, drawlineY.Y);
+         }
+      }
+
+      private void panelMain_Paint(object sender, PaintEventArgs e)
+      {
+         Graphics g = e.Graphics;
          Pen penBlack = new Pen(Brushes.Black, 2);
-         gfx.DrawLine(penBlack, 519, 0, 519, 200);
+         g.DrawLine(penBlack, drawlineX.X, drawlineY.X, drawlineX.Y, drawlineY.Y);
       }
 
       private void cboxRemoveDuplicatesOnly_CheckedChanged(object sender, EventArgs e)
