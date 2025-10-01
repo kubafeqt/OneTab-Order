@@ -40,5 +40,7 @@ Special thanks to these AI systems for their role in bringing this project to li
 
 ## Upcoming Features
 
+Delete all your saved tabs in OneTab by RPA like actions - setupable in RPA settings.
+
 Stay tuned for announcements on new features and updates!
 
