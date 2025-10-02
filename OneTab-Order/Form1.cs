@@ -52,6 +52,7 @@ namespace OneTab_Order
          }
       }
 
+      #region switch panels
       private void SwitchPanelVisible(Panel panelToShow)
       {
          Dictionary<Panel, Button> panelButtonMap = new Dictionary<Panel, Button>()
@@ -79,6 +80,8 @@ namespace OneTab_Order
       {
          SwitchPanelVisible(panelRPASettings);
       }
+
+      #endregion
 
       private void ReAddTabs(ref bool notRemoveEmptyEntries)
       {
@@ -166,20 +169,11 @@ namespace OneTab_Order
          }
       }
 
+      /// <summary>
+      /// Timer for buttons enable/disable
+      /// </summary>
       private void Timer_Tick(object sender, EventArgs e)
       {
-         if (Clipboard.ContainsText()) //for button copy to clipboard enable/disable
-         {
-            string clipboarText = Clipboard.GetText().Trim();
-            if (rtbText.Text != clipboarText && !string.IsNullOrWhiteSpace(clipboarText))
-            {
-               SwitchButtonEnabled(btnCopyAllRtb, true);
-            }
-            else
-            {
-               SwitchButtonEnabled(btnCopyAllRtb, false);
-            }
-         }
          if (string.IsNullOrWhiteSpace(rtbText.Text))
          {
             SwitchButtonEnabled(btnOrder, false);
@@ -187,11 +181,30 @@ namespace OneTab_Order
             SwitchButtonEnabled(btnExtractWebpages, false);
             SwitchButtonEnabled(btnCopyAllRtb, false);
          }
-         else
+         else //rtbText is not empty
          {
+            if (Clipboard.ContainsText()) //for button copy to clipboard enable/disable
+            {
+               string clipboarText = Clipboard.GetText().Trim();
+               if (rtbText.Text != clipboarText && !string.IsNullOrWhiteSpace(clipboarText))
+               {
+                  SwitchButtonEnabled(btnCopyAllRtb, true);
+               }
+               else
+               {
+                  SwitchButtonEnabled(btnCopyAllRtb, false);
+               }
+            }
             SwitchButtonEnabled(btnOrder, true);
             SwitchButtonEnabled(btnSaveToFile, true);
-            SwitchButtonEnabled(btnExtractWebpages, true);
+            if (!string.IsNullOrWhiteSpace(tbExtractWebpages.Text))
+            {
+               SwitchButtonEnabled(btnExtractWebpages, true);
+            }
+            else
+            { 
+               SwitchButtonEnabled(btnExtractWebpages, false);
+            }
          }
       }
 
@@ -378,7 +391,6 @@ namespace OneTab_Order
       #endregion
 
       #region searching text
-
       private int lastSearchPosition = 0;
       private string lastSearchText = "";
       private void btnFindNext_Click(object sender, EventArgs e)
@@ -647,6 +659,7 @@ namespace OneTab_Order
       }
 
       #endregion
+
 
    }
 }

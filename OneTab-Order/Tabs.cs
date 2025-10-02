@@ -104,6 +104,11 @@ namespace OneTab_Order
          KeepLast   //nechá poslední (dole), smaže horní
       }
 
+
+      /// <summary>
+      /// Remove duplicates from TabList according to the specified mode. Empty entries are preserved.
+      /// </summary>
+      /// <param name="mode">Remove duplicate mode - KeepFirst = delete from bellow, KeepLast = delete from up</param>
       public static void RemoveDuplicates(DuplicateRemoveMode mode)
       {
          #region default code

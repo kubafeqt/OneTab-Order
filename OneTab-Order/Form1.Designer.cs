@@ -398,15 +398,15 @@
          panelMain.Controls.Add(cboxRemoveSitesFromDef);
          panelMain.Location = new Point(12, 32);
          panelMain.Name = "panelMain";
-         panelMain.Size = new Size(130, 92);
+         panelMain.Size = new Size(114, 82);
          panelMain.TabIndex = 29;
          panelMain.Paint += panelMain_Paint;
          // 
          // panelRPASettings
          // 
-         panelRPASettings.Location = new Point(148, 33);
+         panelRPASettings.Location = new Point(138, 33);
          panelRPASettings.Name = "panelRPASettings";
-         panelRPASettings.Size = new Size(1035, 735);
+         panelRPASettings.Size = new Size(1150, 736);
          panelRPASettings.TabIndex = 30;
          // 
          // btnMainPanel
