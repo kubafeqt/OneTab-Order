@@ -169,44 +169,54 @@ namespace OneTab_Order
          }
       }
 
+      bool rtbTextChanged = true;
+      bool tbExtractTextChanged = true;
+      string lastClipboardText = "";
       /// <summary>
       /// Timer for buttons enable/disable
       /// </summary>
       private void Timer_Tick(object sender, EventArgs e)
       {
-         if (string.IsNullOrWhiteSpace(rtbText.Text))
+         bool clipBoardChanged = Clipboard.ContainsText() && Clipboard.GetText() != lastClipboardText;
+         bool rtbTextIsEmpty = string.IsNullOrWhiteSpace(rtbText.Text);
+         if (rtbTextIsEmpty && rtbTextChanged)
          {
             SwitchButtonEnabled(btnOrder, false);
             SwitchButtonEnabled(btnSaveToFile, false);
             SwitchButtonEnabled(btnExtractWebpages, false);
             SwitchButtonEnabled(btnCopyAllRtb, false);
+            rtbTextChanged = false;
          }
-         else //rtbText is not empty
+         else if (!rtbTextIsEmpty && (rtbTextChanged || tbExtractTextChanged || clipBoardChanged)) //rtbText is not empty
          {
-            if (Clipboard.ContainsText()) //for button copy to clipboard enable/disable
-            {
-               string clipboarText = Clipboard.GetText().Trim();
-               if (rtbText.Text != clipboarText && !string.IsNullOrWhiteSpace(clipboarText))
-               {
-                  SwitchButtonEnabled(btnCopyAllRtb, true);
-               }
-               else
-               {
-                  SwitchButtonEnabled(btnCopyAllRtb, false);
-               }
-            }
             SwitchButtonEnabled(btnOrder, true);
             SwitchButtonEnabled(btnSaveToFile, true);
+            string clipboarText = Clipboard.GetText().Trim(); //for button copy to clipboard enable/disable
+            lastClipboardText = clipboarText;
+            if ((rtbText.Text != clipboarText && !string.IsNullOrWhiteSpace(clipboarText)) || !Clipboard.ContainsText())
+            {
+               SwitchButtonEnabled(btnCopyAllRtb, true);
+            }
+            else
+            {
+               SwitchButtonEnabled(btnCopyAllRtb, false);
+            }
             if (!string.IsNullOrWhiteSpace(tbExtractWebpages.Text))
             {
                SwitchButtonEnabled(btnExtractWebpages, true);
             }
             else
-            { 
+            {
                SwitchButtonEnabled(btnExtractWebpages, false);
             }
+            rtbTextChanged = false;
+            tbExtractTextChanged = false;
          }
       }
+
+      private void rtbText_TextChanged(object sender, EventArgs e) => rtbTextChanged = true;
+
+      private void tbExtractWebpages_TextChanged(object sender, EventArgs e) => tbExtractTextChanged = true;
 
       private void SwitchButtonEnabled(Button button, bool enable) => button.Enabled = enable;
 
@@ -659,7 +669,6 @@ namespace OneTab_Order
       }
 
       #endregion
-
 
    }
 }

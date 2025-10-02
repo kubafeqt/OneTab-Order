@@ -71,6 +71,7 @@
          rtbText.Size = new Size(1071, 631);
          rtbText.TabIndex = 0;
          rtbText.Text = "";
+         rtbText.TextChanged += rtbText_TextChanged;
          rtbText.KeyDown += rtbText_KeyDown;
          // 
          // btnOrder
@@ -134,6 +135,7 @@
          tbExtractWebpages.Name = "tbExtractWebpages";
          tbExtractWebpages.Size = new Size(734, 23);
          tbExtractWebpages.TabIndex = 7;
+         tbExtractWebpages.TextChanged += tbExtractWebpages_TextChanged;
          // 
          // lbExtractedWebpages
          // 
@@ -398,15 +400,15 @@
          panelMain.Controls.Add(cboxRemoveSitesFromDef);
          panelMain.Location = new Point(12, 32);
          panelMain.Name = "panelMain";
-         panelMain.Size = new Size(114, 82);
+         panelMain.Size = new Size(1024, 574);
          panelMain.TabIndex = 29;
          panelMain.Paint += panelMain_Paint;
          // 
          // panelRPASettings
          // 
-         panelRPASettings.Location = new Point(138, 33);
+         panelRPASettings.Location = new Point(1088, 414);
          panelRPASettings.Name = "panelRPASettings";
-         panelRPASettings.Size = new Size(1150, 736);
+         panelRPASettings.Size = new Size(200, 355);
          panelRPASettings.TabIndex = 30;
          // 
          // btnMainPanel
