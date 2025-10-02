@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
+using System.Security.Cryptography;
 using static System.Windows.Forms.LinkLabel;
 
 #region comments
@@ -218,7 +219,13 @@ namespace OneTab_Order
 
       private void tbExtractWebpages_TextChanged(object sender, EventArgs e) => tbExtractTextChanged = true;
 
-      private void SwitchButtonEnabled(Button button, bool enable) => button.Enabled = enable;
+      private void SwitchButtonEnabled(Button button, bool enable)
+      {
+         if (button.Enabled != enable)
+         {
+            button.Enabled = enable;
+         }
+      }
 
       private void CboxDef_CheckedChanged(object sender, EventArgs e)
       {
