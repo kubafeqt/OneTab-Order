@@ -60,7 +60,14 @@
          panelRPASettings = new Panel();
          btnMainPanel = new Button();
          btnRPASettings = new Button();
+         tbOneTabUrl = new TextBox();
+         lbOneTabUrl = new Label();
+         cmbSelectedBrowser = new ComboBox();
+         lbSelectedBrowser = new Label();
+         btnSaveSelectedBrowserOneTabUrl = new Button();
+         btnOpenSelectedBrowserOnOneTabUrl = new Button();
          panelMain.SuspendLayout();
+         panelRPASettings.SuspendLayout();
          SuspendLayout();
          // 
          // rtbText
@@ -400,15 +407,21 @@
          panelMain.Controls.Add(cboxRemoveSitesFromDef);
          panelMain.Location = new Point(12, 32);
          panelMain.Name = "panelMain";
-         panelMain.Size = new Size(1024, 574);
+         panelMain.Size = new Size(66, 69);
          panelMain.TabIndex = 29;
          panelMain.Paint += panelMain_Paint;
          // 
          // panelRPASettings
          // 
-         panelRPASettings.Location = new Point(1088, 414);
+         panelRPASettings.Controls.Add(btnOpenSelectedBrowserOnOneTabUrl);
+         panelRPASettings.Controls.Add(btnSaveSelectedBrowserOneTabUrl);
+         panelRPASettings.Controls.Add(lbSelectedBrowser);
+         panelRPASettings.Controls.Add(cmbSelectedBrowser);
+         panelRPASettings.Controls.Add(lbOneTabUrl);
+         panelRPASettings.Controls.Add(tbOneTabUrl);
+         panelRPASettings.Location = new Point(84, 32);
          panelRPASettings.Name = "panelRPASettings";
-         panelRPASettings.Size = new Size(200, 355);
+         panelRPASettings.Size = new Size(1204, 736);
          panelRPASettings.TabIndex = 30;
          // 
          // btnMainPanel
@@ -433,6 +446,63 @@
          btnRPASettings.UseVisualStyleBackColor = true;
          btnRPASettings.Click += btnRPASettings_Click;
          // 
+         // tbOneTabUrl
+         // 
+         tbOneTabUrl.Location = new Point(101, 11);
+         tbOneTabUrl.Name = "tbOneTabUrl";
+         tbOneTabUrl.Size = new Size(431, 23);
+         tbOneTabUrl.TabIndex = 0;
+         // 
+         // lbOneTabUrl
+         // 
+         lbOneTabUrl.AutoSize = true;
+         lbOneTabUrl.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         lbOneTabUrl.Location = new Point(15, 11);
+         lbOneTabUrl.Name = "lbOneTabUrl";
+         lbOneTabUrl.Size = new Size(80, 17);
+         lbOneTabUrl.TabIndex = 1;
+         lbOneTabUrl.Text = "OneTab url:";
+         // 
+         // cmbSelectedBrowser
+         // 
+         cmbSelectedBrowser.DropDownStyle = ComboBoxStyle.DropDownList;
+         cmbSelectedBrowser.FormattingEnabled = true;
+         cmbSelectedBrowser.Location = new Point(137, 48);
+         cmbSelectedBrowser.Name = "cmbSelectedBrowser";
+         cmbSelectedBrowser.Size = new Size(232, 23);
+         cmbSelectedBrowser.TabIndex = 2;
+         // 
+         // lbSelectedBrowser
+         // 
+         lbSelectedBrowser.AutoSize = true;
+         lbSelectedBrowser.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         lbSelectedBrowser.Location = new Point(14, 52);
+         lbSelectedBrowser.Name = "lbSelectedBrowser";
+         lbSelectedBrowser.Size = new Size(117, 17);
+         lbSelectedBrowser.TabIndex = 3;
+         lbSelectedBrowser.Text = "Selected browser:";
+         // 
+         // btnSaveSelectedBrowserOneTabUrl
+         // 
+         btnSaveSelectedBrowserOneTabUrl.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+         btnSaveSelectedBrowserOneTabUrl.Location = new Point(375, 47);
+         btnSaveSelectedBrowserOneTabUrl.Name = "btnSaveSelectedBrowserOneTabUrl";
+         btnSaveSelectedBrowserOneTabUrl.Size = new Size(75, 25);
+         btnSaveSelectedBrowserOneTabUrl.TabIndex = 4;
+         btnSaveSelectedBrowserOneTabUrl.Text = "Save";
+         btnSaveSelectedBrowserOneTabUrl.UseVisualStyleBackColor = true;
+         // 
+         // btnOpenSelectedBrowserOnOneTabUrl
+         // 
+         btnOpenSelectedBrowserOnOneTabUrl.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+         btnOpenSelectedBrowserOnOneTabUrl.Location = new Point(457, 46);
+         btnOpenSelectedBrowserOnOneTabUrl.Name = "btnOpenSelectedBrowserOnOneTabUrl";
+         btnOpenSelectedBrowserOnOneTabUrl.Size = new Size(75, 26);
+         btnOpenSelectedBrowserOnOneTabUrl.TabIndex = 5;
+         btnOpenSelectedBrowserOnOneTabUrl.Text = "Open";
+         btnOpenSelectedBrowserOnOneTabUrl.UseVisualStyleBackColor = true;
+         btnOpenSelectedBrowserOnOneTabUrl.Click += btnOpenSelectedBrowserOnOneTabUrl_Click;
+         // 
          // Form1
          // 
          AutoScaleDimensions = new SizeF(7F, 15F);
@@ -450,6 +520,8 @@
          KeyDown += Form1_KeyDown;
          panelMain.ResumeLayout(false);
          panelMain.PerformLayout();
+         panelRPASettings.ResumeLayout(false);
+         panelRPASettings.PerformLayout();
          ResumeLayout(false);
       }
 
@@ -487,5 +559,11 @@
       private Panel panelRPASettings;
       private Button btnMainPanel;
       private Button btnRPASettings;
+      private ComboBox cmbSelectedBrowser;
+      private Label lbOneTabUrl;
+      private TextBox tbOneTabUrl;
+      private Button btnOpenSelectedBrowserOnOneTabUrl;
+      private Button btnSaveSelectedBrowserOneTabUrl;
+      private Label lbSelectedBrowser;
    }
 }

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Win32;
+using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
 using System.Security.Cryptography;
 using static System.Windows.Forms.LinkLabel;
@@ -42,6 +43,10 @@ namespace OneTab_Order
 
          LoadPanelsSizeAndLocation();
          SwitchPanelVisible(panelMain);
+
+         cmbSelectedBrowser.Items.Add($"default: {GetDefaultBrowserName()}");
+         cmbSelectedBrowser.SelectedIndex = 0;
+         DetectInstalledBrowsers();
       }
 
       private void LoadPanelsSizeAndLocation()
@@ -676,6 +681,190 @@ namespace OneTab_Order
       }
 
       #endregion
+
+      private void btnOpenSelectedBrowserOnOneTabUrl_Click(object sender, EventArgs e)
+      {
+         //Process.Start(new ProcessStartInfo(tbOneTabUrl.Text) { UseShellExecute = true });
+         if (cmbSelectedBrowser.SelectedIndex == 0) //default
+         {
+            LaunchDefaultBrowser(tbOneTabUrl.Text);
+         }
+         else
+         {
+            LaunchBrowser();
+         }
+      }
+
+      void LaunchBrowser()
+      {
+         Dictionary<string, string> browserExecutables = new()
+             {
+                 { "Google Chrome", "chrome.exe" },
+                 { "Mozilla Firefox", "firefox.exe" },
+                 { "Microsoft Edge", "msedge.exe" },
+                 { "Opera", "opera.exe" },
+                 { "Opera GX", "opera.exe" },
+                 { "Brave", "brave.exe" },
+                 { "Vivaldi", "vivaldi.exe" },
+                 { "Safari", "safari.exe" },
+                 { "Internet Explorer", "iexplore.exe" }
+             };
+
+         string[] chromiumBasedBrowser = { "chrome.exe", "msedge.exe", "opera.exe", "brave.exe", "vivaldi.exe" };
+
+         string browserName = browserExecutables[cmbSelectedBrowser.SelectedItem.ToString()];
+         //string browserPath = GetInstalledBrowserPath(browserName);
+         if (browserName != null)
+         {
+            Process.Start(new ProcessStartInfo
+            {
+               FileName = browserName,
+               Arguments = tbOneTabUrl.Text,
+               UseShellExecute = true
+            });
+            if (chromiumBasedBrowser.Contains(browserName)) //it is chromium based browser - go to extension page manually
+            {
+
+            }
+         }
+         else
+         {
+            MessageBox.Show($"Could not find the path for {browserName}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+         }
+      }
+
+      static void LaunchDefaultBrowser(string url)
+      {
+         string browserCmd = GetDefaultBrowserCommand();
+         if (browserCmd == null)
+         {
+            Console.WriteLine("Could not detect default browser.");
+            return;
+         }
+
+         // Insert the URL into the command string
+         string command = browserCmd.Replace("%1", url);
+
+         // Split into exe + args
+         ParseCommand(command, out string exePath, out string args);
+
+         Console.WriteLine($"Starting: {exePath} {args}");
+         Process.Start(exePath, args);
+      }
+
+      static string GetDefaultBrowserCommand()
+      {
+         const string userChoicePath =
+             @"Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice";
+
+         using (RegistryKey userChoiceKey = Registry.CurrentUser.OpenSubKey(userChoicePath))
+         {
+            if (userChoiceKey == null) return null;
+
+            string progId = userChoiceKey.GetValue("ProgId") as string;
+            if (string.IsNullOrEmpty(progId)) return null;
+
+            using (RegistryKey cmdKey = Registry.ClassesRoot.OpenSubKey(progId + @"\shell\open\command"))
+            {
+               if (cmdKey == null) return null;
+               return cmdKey.GetValue(null) as string;
+            }
+         }
+      }
+
+      static void ParseCommand(string command, out string exePath, out string args)
+      {
+         exePath = null;
+         args = null;
+
+         if (string.IsNullOrEmpty(command)) return;
+
+         command = command.Trim();
+
+         // If quoted path
+         if (command.StartsWith("\""))
+         {
+            int endQuote = command.IndexOf("\"", 1);
+            exePath = command.Substring(1, endQuote - 1);
+            args = command.Substring(endQuote + 1).Trim();
+         }
+         else
+         {
+            int firstSpace = command.IndexOf(" ");
+            if (firstSpace > 0)
+            {
+               exePath = command.Substring(0, firstSpace);
+               args = command.Substring(firstSpace + 1).Trim();
+            }
+            else
+            {
+               exePath = command;
+               args = "";
+            }
+         }
+      }
+
+      static string GetDefaultBrowserName()
+      {
+         const string userChoicePath =
+             @"Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice";
+
+         using (RegistryKey userChoiceKey = Registry.CurrentUser.OpenSubKey(userChoicePath))
+         {
+            if (userChoiceKey == null)
+               return "Not found";
+
+            object progIdValue = userChoiceKey.GetValue("ProgId");
+            if (progIdValue == null)
+               return "Not found";
+
+            string progId = progIdValue.ToString();
+
+            // Normalize in case ProgId has suffix (like ChromeHTML.7)
+            //string normalized = progId.Split('.')[0];
+
+            return progId switch
+            {
+               var s when s?.StartsWith("ChromeHTML") == true => "Google Chrome",
+               var s when s?.StartsWith("MSEdgeHTM") == true => "Microsoft Edge",
+               var s when s?.StartsWith("FirefoxURL") == true => "Mozilla Firefox",
+               var s when s?.StartsWith("IE.HTTP") == true => "Internet Explorer",
+               var s when s?.StartsWith("OperaStable") == true => "Opera",
+               var s when s?.StartsWith("OperaGXStable") == true => "Opera GX",
+               var s when s?.StartsWith("BraveHTML") == true => "Brave",
+               var s when s?.StartsWith("VivaldiHTM") == true => "Vivaldi",
+               var s when s?.StartsWith("SafariHTML") == true => "Safari",
+               _ => progId ?? "Unknown Browser" // fallback: return the raw ProgId
+            };
+         }
+      }
+
+      void DetectInstalledBrowsers()
+      {
+         DetectInstalledBrowsers(Registry.LocalMachine, @"SOFTWARE\Clients\StartMenuInternet");
+         DetectInstalledBrowsers(Registry.CurrentUser, @"SOFTWARE\Clients\StartMenuInternet");
+         DetectInstalledBrowsers(Registry.LocalMachine, @"SOFTWARE\WOW6432Node\Clients\StartMenuInternet");
+      }
+
+      void DetectInstalledBrowsers(RegistryKey root, string path)
+      {
+         using (RegistryKey key = root.OpenSubKey(path))
+         {
+            if (key == null) return;
+
+            foreach (var subKeyName in key.GetSubKeyNames())
+            {
+               using (RegistryKey browserKey = key.OpenSubKey(subKeyName))
+               {
+                  string browserName = (string)browserKey.GetValue(null);
+                  bool browserExist = cmbSelectedBrowser.Items.Cast<object>()
+                     .Any(item => item.ToString().Replace("default: ", "").Trim().Contains(browserName));
+                  if (browserExist || browserName.Contains("explorer", StringComparison.OrdinalIgnoreCase)) continue;
+                  cmbSelectedBrowser.Items.Add(browserName);
+               }
+            }
+         }
+      }
 
    }
 }
