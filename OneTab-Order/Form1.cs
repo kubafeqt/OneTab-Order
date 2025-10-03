@@ -1,6 +1,8 @@
 ﻿using Microsoft.Win32;
+using System;
 using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using static System.Windows.Forms.LinkLabel;
 
@@ -722,15 +724,70 @@ namespace OneTab_Order
                Arguments = tbOneTabUrl.Text,
                UseShellExecute = true
             });
-            if (chromiumBasedBrowser.Contains(browserName)) //it is chromium based browser - go to extension page manually
+            //it is chromium based browser - go to extension page manually:
+            if (chromiumBasedBrowser.Contains(browserName) && !string.IsNullOrWhiteSpace(tbOneTabUrl.Text) && tbOneTabUrl.Text.StartsWith("extension://", StringComparison.OrdinalIgnoreCase))
             {
-
+               if (cboxOverrideClipboard.Checked)
+               {
+                  Clipboard.SetText(tbOneTabUrl.Text);
+               }
+               // Wait until any Chrome window exists
+               string pureBrowserName = browserName.Split('.')[0];
+               while (!BrowserWindowExists(pureBrowserName))
+               {
+                  Thread.Sleep(100);
+               }
+               Thread.Sleep(cboxOverrideClipboard.Checked ? 100 : 200); //ensure UI is fully responsive
+               SendKeys.SendWait("^l");
+               Thread.Sleep(100);
+               if (cboxOverrideClipboard.Checked)
+               {
+                  SendKeys.SendWait("^v");
+               }
+               else
+               {
+                  SendKeys.SendWait(tbOneTabUrl.Text); //for the case if Clipboard.SetText() won't work or user don't want override clipboard
+               }
+               Thread.Sleep(100);
+               SendKeys.SendWait("{ENTER}");
             }
          }
          else
          {
             MessageBox.Show($"Could not find the path for {browserName}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
          }
+      }
+
+      [DllImport("user32.dll")]
+      [return: MarshalAs(UnmanagedType.Bool)]
+      private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+      private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+      [DllImport("user32.dll")]
+      private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+      static bool BrowserWindowExists(string processName)
+      {
+         bool found = false;
+
+         EnumWindows((hWnd, lParam) =>
+         {
+            GetWindowThreadProcessId(hWnd, out uint pid);
+            try
+            {
+               var p = Process.GetProcessById((int)pid);
+               if (p.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase))
+               {
+                  found = true;
+                  return false; // stop enumeration
+               }
+            }
+            catch { }
+            return true; // continue enumeration
+         }, IntPtr.Zero);
+
+         return found;
       }
 
       static void LaunchDefaultBrowser(string url)

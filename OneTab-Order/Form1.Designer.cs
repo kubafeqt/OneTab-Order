@@ -58,14 +58,15 @@
          btnOpenSavedFolder = new Button();
          panelMain = new Panel();
          panelRPASettings = new Panel();
+         btnOpenSelectedBrowserOnOneTabUrl = new Button();
+         btnSaveSelectedBrowserOneTabUrl = new Button();
+         lbSelectedBrowser = new Label();
+         cmbSelectedBrowser = new ComboBox();
+         lbOneTabUrl = new Label();
+         tbOneTabUrl = new TextBox();
          btnMainPanel = new Button();
          btnRPASettings = new Button();
-         tbOneTabUrl = new TextBox();
-         lbOneTabUrl = new Label();
-         cmbSelectedBrowser = new ComboBox();
-         lbSelectedBrowser = new Label();
-         btnSaveSelectedBrowserOneTabUrl = new Button();
-         btnOpenSelectedBrowserOnOneTabUrl = new Button();
+         cboxOverrideClipboard = new CheckBox();
          panelMain.SuspendLayout();
          panelRPASettings.SuspendLayout();
          SuspendLayout();
@@ -413,6 +414,7 @@
          // 
          // panelRPASettings
          // 
+         panelRPASettings.Controls.Add(cboxOverrideClipboard);
          panelRPASettings.Controls.Add(btnOpenSelectedBrowserOnOneTabUrl);
          panelRPASettings.Controls.Add(btnSaveSelectedBrowserOneTabUrl);
          panelRPASettings.Controls.Add(lbSelectedBrowser);
@@ -423,6 +425,63 @@
          panelRPASettings.Name = "panelRPASettings";
          panelRPASettings.Size = new Size(1204, 736);
          panelRPASettings.TabIndex = 30;
+         // 
+         // btnOpenSelectedBrowserOnOneTabUrl
+         // 
+         btnOpenSelectedBrowserOnOneTabUrl.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+         btnOpenSelectedBrowserOnOneTabUrl.Location = new Point(457, 46);
+         btnOpenSelectedBrowserOnOneTabUrl.Name = "btnOpenSelectedBrowserOnOneTabUrl";
+         btnOpenSelectedBrowserOnOneTabUrl.Size = new Size(75, 26);
+         btnOpenSelectedBrowserOnOneTabUrl.TabIndex = 5;
+         btnOpenSelectedBrowserOnOneTabUrl.Text = "Open";
+         btnOpenSelectedBrowserOnOneTabUrl.UseVisualStyleBackColor = true;
+         btnOpenSelectedBrowserOnOneTabUrl.Click += btnOpenSelectedBrowserOnOneTabUrl_Click;
+         // 
+         // btnSaveSelectedBrowserOneTabUrl
+         // 
+         btnSaveSelectedBrowserOneTabUrl.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+         btnSaveSelectedBrowserOneTabUrl.Location = new Point(375, 47);
+         btnSaveSelectedBrowserOneTabUrl.Name = "btnSaveSelectedBrowserOneTabUrl";
+         btnSaveSelectedBrowserOneTabUrl.Size = new Size(75, 25);
+         btnSaveSelectedBrowserOneTabUrl.TabIndex = 4;
+         btnSaveSelectedBrowserOneTabUrl.Text = "Save";
+         btnSaveSelectedBrowserOneTabUrl.UseVisualStyleBackColor = true;
+         // 
+         // lbSelectedBrowser
+         // 
+         lbSelectedBrowser.AutoSize = true;
+         lbSelectedBrowser.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         lbSelectedBrowser.Location = new Point(14, 52);
+         lbSelectedBrowser.Name = "lbSelectedBrowser";
+         lbSelectedBrowser.Size = new Size(117, 17);
+         lbSelectedBrowser.TabIndex = 3;
+         lbSelectedBrowser.Text = "Selected browser:";
+         // 
+         // cmbSelectedBrowser
+         // 
+         cmbSelectedBrowser.DropDownStyle = ComboBoxStyle.DropDownList;
+         cmbSelectedBrowser.FormattingEnabled = true;
+         cmbSelectedBrowser.Location = new Point(137, 48);
+         cmbSelectedBrowser.Name = "cmbSelectedBrowser";
+         cmbSelectedBrowser.Size = new Size(232, 23);
+         cmbSelectedBrowser.TabIndex = 2;
+         // 
+         // lbOneTabUrl
+         // 
+         lbOneTabUrl.AutoSize = true;
+         lbOneTabUrl.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         lbOneTabUrl.Location = new Point(15, 11);
+         lbOneTabUrl.Name = "lbOneTabUrl";
+         lbOneTabUrl.Size = new Size(80, 17);
+         lbOneTabUrl.TabIndex = 1;
+         lbOneTabUrl.Text = "OneTab url:";
+         // 
+         // tbOneTabUrl
+         // 
+         tbOneTabUrl.Location = new Point(101, 11);
+         tbOneTabUrl.Name = "tbOneTabUrl";
+         tbOneTabUrl.Size = new Size(431, 23);
+         tbOneTabUrl.TabIndex = 0;
          // 
          // btnMainPanel
          // 
@@ -446,62 +505,18 @@
          btnRPASettings.UseVisualStyleBackColor = true;
          btnRPASettings.Click += btnRPASettings_Click;
          // 
-         // tbOneTabUrl
+         // cboxOverrideClipboard
          // 
-         tbOneTabUrl.Location = new Point(101, 11);
-         tbOneTabUrl.Name = "tbOneTabUrl";
-         tbOneTabUrl.Size = new Size(431, 23);
-         tbOneTabUrl.TabIndex = 0;
-         // 
-         // lbOneTabUrl
-         // 
-         lbOneTabUrl.AutoSize = true;
-         lbOneTabUrl.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbOneTabUrl.Location = new Point(15, 11);
-         lbOneTabUrl.Name = "lbOneTabUrl";
-         lbOneTabUrl.Size = new Size(80, 17);
-         lbOneTabUrl.TabIndex = 1;
-         lbOneTabUrl.Text = "OneTab url:";
-         // 
-         // cmbSelectedBrowser
-         // 
-         cmbSelectedBrowser.DropDownStyle = ComboBoxStyle.DropDownList;
-         cmbSelectedBrowser.FormattingEnabled = true;
-         cmbSelectedBrowser.Location = new Point(137, 48);
-         cmbSelectedBrowser.Name = "cmbSelectedBrowser";
-         cmbSelectedBrowser.Size = new Size(232, 23);
-         cmbSelectedBrowser.TabIndex = 2;
-         // 
-         // lbSelectedBrowser
-         // 
-         lbSelectedBrowser.AutoSize = true;
-         lbSelectedBrowser.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbSelectedBrowser.Location = new Point(14, 52);
-         lbSelectedBrowser.Name = "lbSelectedBrowser";
-         lbSelectedBrowser.Size = new Size(117, 17);
-         lbSelectedBrowser.TabIndex = 3;
-         lbSelectedBrowser.Text = "Selected browser:";
-         // 
-         // btnSaveSelectedBrowserOneTabUrl
-         // 
-         btnSaveSelectedBrowserOneTabUrl.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-         btnSaveSelectedBrowserOneTabUrl.Location = new Point(375, 47);
-         btnSaveSelectedBrowserOneTabUrl.Name = "btnSaveSelectedBrowserOneTabUrl";
-         btnSaveSelectedBrowserOneTabUrl.Size = new Size(75, 25);
-         btnSaveSelectedBrowserOneTabUrl.TabIndex = 4;
-         btnSaveSelectedBrowserOneTabUrl.Text = "Save";
-         btnSaveSelectedBrowserOneTabUrl.UseVisualStyleBackColor = true;
-         // 
-         // btnOpenSelectedBrowserOnOneTabUrl
-         // 
-         btnOpenSelectedBrowserOnOneTabUrl.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-         btnOpenSelectedBrowserOnOneTabUrl.Location = new Point(457, 46);
-         btnOpenSelectedBrowserOnOneTabUrl.Name = "btnOpenSelectedBrowserOnOneTabUrl";
-         btnOpenSelectedBrowserOnOneTabUrl.Size = new Size(75, 26);
-         btnOpenSelectedBrowserOnOneTabUrl.TabIndex = 5;
-         btnOpenSelectedBrowserOnOneTabUrl.Text = "Open";
-         btnOpenSelectedBrowserOnOneTabUrl.UseVisualStyleBackColor = true;
-         btnOpenSelectedBrowserOnOneTabUrl.Click += btnOpenSelectedBrowserOnOneTabUrl_Click;
+         cboxOverrideClipboard.AutoSize = true;
+         cboxOverrideClipboard.Checked = true;
+         cboxOverrideClipboard.CheckState = CheckState.Checked;
+         cboxOverrideClipboard.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         cboxOverrideClipboard.Location = new Point(538, 11);
+         cboxOverrideClipboard.Name = "cboxOverrideClipboard";
+         cboxOverrideClipboard.Size = new Size(375, 21);
+         cboxOverrideClipboard.TabIndex = 6;
+         cboxOverrideClipboard.Text = "Override Clipboard (only for Chromium based browsers)";
+         cboxOverrideClipboard.UseVisualStyleBackColor = true;
          // 
          // Form1
          // 
@@ -565,5 +580,6 @@
       private Button btnOpenSelectedBrowserOnOneTabUrl;
       private Button btnSaveSelectedBrowserOneTabUrl;
       private Label lbSelectedBrowser;
+      private CheckBox cboxOverrideClipboard;
    }
 }
