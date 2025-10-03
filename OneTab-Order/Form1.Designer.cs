@@ -58,6 +58,7 @@
          btnOpenSavedFolder = new Button();
          panelMain = new Panel();
          panelRPASettings = new Panel();
+         cboxUseClipboard = new CheckBox();
          btnOpenSelectedBrowserOnOneTabUrl = new Button();
          btnSaveSelectedBrowserOneTabUrl = new Button();
          lbSelectedBrowser = new Label();
@@ -66,7 +67,6 @@
          tbOneTabUrl = new TextBox();
          btnMainPanel = new Button();
          btnRPASettings = new Button();
-         cboxOverrideClipboard = new CheckBox();
          panelMain.SuspendLayout();
          panelRPASettings.SuspendLayout();
          SuspendLayout();
@@ -414,7 +414,7 @@
          // 
          // panelRPASettings
          // 
-         panelRPASettings.Controls.Add(cboxOverrideClipboard);
+         panelRPASettings.Controls.Add(cboxUseClipboard);
          panelRPASettings.Controls.Add(btnOpenSelectedBrowserOnOneTabUrl);
          panelRPASettings.Controls.Add(btnSaveSelectedBrowserOneTabUrl);
          panelRPASettings.Controls.Add(lbSelectedBrowser);
@@ -425,6 +425,19 @@
          panelRPASettings.Name = "panelRPASettings";
          panelRPASettings.Size = new Size(1204, 736);
          panelRPASettings.TabIndex = 30;
+         // 
+         // cboxUseClipboard
+         // 
+         cboxUseClipboard.AutoSize = true;
+         cboxUseClipboard.Checked = true;
+         cboxUseClipboard.CheckState = CheckState.Checked;
+         cboxUseClipboard.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         cboxUseClipboard.Location = new Point(538, 13);
+         cboxUseClipboard.Name = "cboxUseClipboard";
+         cboxUseClipboard.Size = new Size(342, 21);
+         cboxUseClipboard.TabIndex = 6;
+         cboxUseClipboard.Text = "Use clipboard (only for Chromium based browsers)";
+         cboxUseClipboard.UseVisualStyleBackColor = true;
          // 
          // btnOpenSelectedBrowserOnOneTabUrl
          // 
@@ -505,19 +518,6 @@
          btnRPASettings.UseVisualStyleBackColor = true;
          btnRPASettings.Click += btnRPASettings_Click;
          // 
-         // cboxOverrideClipboard
-         // 
-         cboxOverrideClipboard.AutoSize = true;
-         cboxOverrideClipboard.Checked = true;
-         cboxOverrideClipboard.CheckState = CheckState.Checked;
-         cboxOverrideClipboard.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         cboxOverrideClipboard.Location = new Point(538, 11);
-         cboxOverrideClipboard.Name = "cboxOverrideClipboard";
-         cboxOverrideClipboard.Size = new Size(375, 21);
-         cboxOverrideClipboard.TabIndex = 6;
-         cboxOverrideClipboard.Text = "Override Clipboard (only for Chromium based browsers)";
-         cboxOverrideClipboard.UseVisualStyleBackColor = true;
-         // 
          // Form1
          // 
          AutoScaleDimensions = new SizeF(7F, 15F);
@@ -580,6 +580,6 @@
       private Button btnOpenSelectedBrowserOnOneTabUrl;
       private Button btnSaveSelectedBrowserOneTabUrl;
       private Label lbSelectedBrowser;
-      private CheckBox cboxOverrideClipboard;
+      private CheckBox cboxUseClipboard;
    }
 }

@@ -727,7 +727,7 @@ namespace OneTab_Order
             //it is chromium based browser - go to extension page manually:
             if (chromiumBasedBrowser.Contains(browserName) && !string.IsNullOrWhiteSpace(tbOneTabUrl.Text) && tbOneTabUrl.Text.StartsWith("extension://", StringComparison.OrdinalIgnoreCase))
             {
-               if (cboxOverrideClipboard.Checked)
+               if (cboxUseClipboard.Checked)
                {
                   Clipboard.SetText(tbOneTabUrl.Text);
                }
@@ -737,16 +737,16 @@ namespace OneTab_Order
                {
                   Thread.Sleep(100);
                }
-               Thread.Sleep(cboxOverrideClipboard.Checked ? 100 : 200); //ensure UI is fully responsive
+               Thread.Sleep(cboxUseClipboard.Checked ? 100 : 200); //ensure UI is fully responsive
                SendKeys.SendWait("^l");
                Thread.Sleep(100);
-               if (cboxOverrideClipboard.Checked)
+               if (cboxUseClipboard.Checked)
                {
                   SendKeys.SendWait("^v");
                }
                else
                {
-                  SendKeys.SendWait(tbOneTabUrl.Text); //for the case if Clipboard.SetText() won't work or user don't want override clipboard
+                  SendKeys.SendWait(tbOneTabUrl.Text); //for the case if Clipboard.SetText() won't work or user don't want use/override clipboard
                }
                Thread.Sleep(100);
                SendKeys.SendWait("{ENTER}");
