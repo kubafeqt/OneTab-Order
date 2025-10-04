@@ -42,5 +42,5 @@ Special thanks to these AI systems for their role in bringing this project to li
 
 Delete all your saved tabs in OneTab using RPA like actions - configurable in RPA settings.
 
-Stay tuned for announcements on new features and updates!
+Stay tuned for new features and improvements!
 
