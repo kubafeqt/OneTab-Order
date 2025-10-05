@@ -11,6 +11,7 @@ namespace OneTab_Order
       public static Size panelSize = new Size(1281, 745);
       public static Point panelLocation = new Point(12, 32);
 
+      public static bool originalWindowState = true;
 
    }
 }

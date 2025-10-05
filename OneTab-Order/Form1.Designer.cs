@@ -58,6 +58,7 @@
          btnOpenSavedFolder = new Button();
          panelMain = new Panel();
          panelRPASettings = new Panel();
+         btnGetSamples = new Button();
          cboxUseClipboard = new CheckBox();
          btnOpenSelectedBrowserOnOneTabUrl = new Button();
          btnSaveSelectedBrowserOneTabUrl = new Button();
@@ -227,7 +228,7 @@
          // 
          // tbFind
          // 
-         tbFind.Location = new Point(1090, 226);
+         tbFind.Location = new Point(1086, 167);
          tbFind.Name = "tbFind";
          tbFind.Size = new Size(186, 23);
          tbFind.TabIndex = 16;
@@ -237,7 +238,7 @@
          // 
          lbFind.AutoSize = true;
          lbFind.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbFind.Location = new Point(1084, 202);
+         lbFind.Location = new Point(1080, 143);
          lbFind.Name = "lbFind";
          lbFind.Size = new Size(45, 21);
          lbFind.TabIndex = 17;
@@ -246,7 +247,7 @@
          // btnFindPrev
          // 
          btnFindPrev.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         btnFindPrev.Location = new Point(1214, 255);
+         btnFindPrev.Location = new Point(1210, 196);
          btnFindPrev.Name = "btnFindPrev";
          btnFindPrev.Size = new Size(62, 26);
          btnFindPrev.TabIndex = 18;
@@ -257,7 +258,7 @@
          // btnFindNext
          // 
          btnFindNext.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         btnFindNext.Location = new Point(1146, 255);
+         btnFindNext.Location = new Point(1142, 196);
          btnFindNext.Name = "btnFindNext";
          btnFindNext.Size = new Size(62, 26);
          btnFindNext.TabIndex = 17;
@@ -269,7 +270,7 @@
          // 
          lbFindBtn.AutoSize = true;
          lbFindBtn.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbFindBtn.Location = new Point(1095, 257);
+         lbFindBtn.Location = new Point(1091, 198);
          lbFindBtn.Name = "lbFindBtn";
          lbFindBtn.Size = new Size(45, 21);
          lbFindBtn.TabIndex = 20;
@@ -307,18 +308,18 @@
          cboxExtractedRemoveTrackingQueries.Checked = true;
          cboxExtractedRemoveTrackingQueries.CheckState = CheckState.Checked;
          cboxExtractedRemoveTrackingQueries.Font = new Font("Segoe UI", 10.181818F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         cboxExtractedRemoveTrackingQueries.Location = new Point(1088, 164);
+         cboxExtractedRemoveTrackingQueries.Location = new Point(869, 79);
          cboxExtractedRemoveTrackingQueries.Name = "cboxExtractedRemoveTrackingQueries";
-         cboxExtractedRemoveTrackingQueries.Size = new Size(192, 23);
+         cboxExtractedRemoveTrackingQueries.Size = new Size(195, 23);
          cboxExtractedRemoveTrackingQueries.TabIndex = 15;
-         cboxExtractedRemoveTrackingQueries.Text = "remove tracking queries";
+         cboxExtractedRemoveTrackingQueries.Text = "Remove tracking queries";
          cboxExtractedRemoveTrackingQueries.UseVisualStyleBackColor = true;
          // 
          // lbExtracted
          // 
          lbExtracted.AutoSize = true;
          lbExtracted.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbExtracted.Location = new Point(1088, 140);
+         lbExtracted.Location = new Point(761, 1);
          lbExtracted.Name = "lbExtracted";
          lbExtracted.Size = new Size(83, 21);
          lbExtracted.TabIndex = 23;
@@ -328,7 +329,7 @@
          // 
          cmbFindType.DropDownStyle = ComboBoxStyle.DropDownList;
          cmbFindType.FormattingEnabled = true;
-         cmbFindType.Location = new Point(1090, 318);
+         cmbFindType.Location = new Point(1086, 259);
          cmbFindType.Name = "cmbFindType";
          cmbFindType.Size = new Size(186, 23);
          cmbFindType.TabIndex = 19;
@@ -337,7 +338,7 @@
          // 
          lbFindType.AutoSize = true;
          lbFindType.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-         lbFindType.Location = new Point(1084, 290);
+         lbFindType.Location = new Point(1080, 231);
          lbFindType.Name = "lbFindType";
          lbFindType.Size = new Size(84, 21);
          lbFindType.TabIndex = 25;
@@ -408,12 +409,13 @@
          panelMain.Controls.Add(cboxRemoveSitesFromDef);
          panelMain.Location = new Point(12, 32);
          panelMain.Name = "panelMain";
-         panelMain.Size = new Size(66, 69);
+         panelMain.Size = new Size(66, 77);
          panelMain.TabIndex = 29;
          panelMain.Paint += panelMain_Paint;
          // 
          // panelRPASettings
          // 
+         panelRPASettings.Controls.Add(btnGetSamples);
          panelRPASettings.Controls.Add(cboxUseClipboard);
          panelRPASettings.Controls.Add(btnOpenSelectedBrowserOnOneTabUrl);
          panelRPASettings.Controls.Add(btnSaveSelectedBrowserOneTabUrl);
@@ -423,8 +425,19 @@
          panelRPASettings.Controls.Add(tbOneTabUrl);
          panelRPASettings.Location = new Point(84, 32);
          panelRPASettings.Name = "panelRPASettings";
-         panelRPASettings.Size = new Size(1204, 736);
+         panelRPASettings.Size = new Size(1181, 702);
          panelRPASettings.TabIndex = 30;
+         // 
+         // btnGetSamples
+         // 
+         btnGetSamples.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+         btnGetSamples.Location = new Point(101, 98);
+         btnGetSamples.Name = "btnGetSamples";
+         btnGetSamples.Size = new Size(100, 26);
+         btnGetSamples.TabIndex = 7;
+         btnGetSamples.Text = "get samples";
+         btnGetSamples.UseVisualStyleBackColor = true;
+         btnGetSamples.Click += btnGetSamples_Click;
          // 
          // cboxUseClipboard
          // 
@@ -459,6 +472,7 @@
          btnSaveSelectedBrowserOneTabUrl.TabIndex = 4;
          btnSaveSelectedBrowserOneTabUrl.Text = "Save";
          btnSaveSelectedBrowserOneTabUrl.UseVisualStyleBackColor = true;
+         btnSaveSelectedBrowserOneTabUrl.Click += btnSaveSelectedBrowserOneTabUrl_Click;
          // 
          // lbSelectedBrowser
          // 
@@ -478,6 +492,7 @@
          cmbSelectedBrowser.Name = "cmbSelectedBrowser";
          cmbSelectedBrowser.Size = new Size(232, 23);
          cmbSelectedBrowser.TabIndex = 2;
+         cmbSelectedBrowser.SelectedIndexChanged += cmbSelectedBrowser_SelectedIndexChanged;
          // 
          // lbOneTabUrl
          // 
@@ -533,6 +548,8 @@
          Text = "OneTab order";
          Paint += Form1_Paint;
          KeyDown += Form1_KeyDown;
+         MouseDown += Form1_MouseDown;
+         MouseMove += Form1_MouseMove;
          panelMain.ResumeLayout(false);
          panelMain.PerformLayout();
          panelRPASettings.ResumeLayout(false);
@@ -581,5 +598,6 @@
       private Button btnSaveSelectedBrowserOneTabUrl;
       private Label lbSelectedBrowser;
       private CheckBox cboxUseClipboard;
+      private Button btnGetSamples;
    }
 }

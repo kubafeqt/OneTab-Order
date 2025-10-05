@@ -2,6 +2,8 @@
 using System;
 using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using static System.Windows.Forms.LinkLabel;
@@ -49,6 +51,9 @@ namespace OneTab_Order
          cmbSelectedBrowser.Items.Add($"default: {GetDefaultBrowserName()}");
          cmbSelectedBrowser.SelectedIndex = 0;
          DetectInstalledBrowsers();
+
+         DoubleBuffered = true;
+         KeyPreview = true; // formulář zachytí klávesy
       }
 
       private void LoadPanelsSizeAndLocation()
@@ -61,7 +66,7 @@ namespace OneTab_Order
       }
 
       #region switch panels
-      private void SwitchPanelVisible(Panel panelToShow)
+      private void SwitchPanelVisible(Panel? panelToShow)
       {
          Dictionary<Panel, Button> panelButtonMap = new Dictionary<Panel, Button>()
          {
@@ -72,8 +77,17 @@ namespace OneTab_Order
          foreach (Panel panel in Controls.OfType<Panel>())
          {
             panel.Visible = false;
-            panelButtonMap[panel].Enabled = true;
+            if (panelToShow != null)
+            {
+               panelButtonMap[panel].Visible = true;
+               panelButtonMap[panel].Enabled = true;
+            }
+            else
+            {
+               panelButtonMap[panel].Visible = false;
+            }
          }
+         if (panelToShow == null) return;
          panelToShow.Visible = true;
          panelButtonMap[panelToShow].Enabled = false;
          Refresh();
@@ -366,6 +380,34 @@ namespace OneTab_Order
             Pen penBlack = new Pen(Brushes.Black, 2);
             gfx.DrawLine(penBlack, panelMain.Location.X + drawlineX.X, drawlineY.X, panelMain.Location.X + drawlineX.Y, drawlineY.Y);
          }
+
+         foreach (var (refRect, sampleRect, searchStart) in entries)
+         {
+            using (Pen p1 = new Pen(Color.Red, 2)) gfx.DrawRectangle(p1, refRect);
+            using (Pen p2 = new Pen(Color.Blue, 2)) gfx.DrawRectangle(p2, sampleRect);
+         }
+
+         if (firstRef.HasValue && clickPhase >= 1)
+            gfx.FillRectangle(Brushes.Red, firstRef.Value.X - 2, firstRef.Value.Y - 2, 4, 4);
+
+         if (firstRef.HasValue && secondRef.HasValue && clickPhase >= 2)
+            gfx.DrawRectangle(Pens.Red, Rectangle.FromLTRB(
+                Math.Min(firstRef.Value.X, secondRef.Value.X),
+                Math.Min(firstRef.Value.Y, secondRef.Value.Y),
+                Math.Max(firstRef.Value.X, secondRef.Value.X),
+                Math.Max(firstRef.Value.Y, secondRef.Value.Y)
+            ));
+
+         if (firstSample.HasValue && clickPhase >= 3)
+            gfx.FillRectangle(Brushes.Blue, firstSample.Value.X - 2, firstSample.Value.Y - 2, 4, 4);
+
+         if (firstSample.HasValue && secondSample.HasValue && clickPhase >= 3)
+            gfx.DrawRectangle(Pens.Blue, Rectangle.FromLTRB(
+                Math.Min(firstSample.Value.X, secondSample.Value.X),
+                Math.Min(firstSample.Value.Y, secondSample.Value.Y),
+                Math.Max(firstSample.Value.X, secondSample.Value.X),
+                Math.Max(firstSample.Value.Y, secondSample.Value.Y)
+            ));
       }
 
       private void panelMain_Paint(object sender, PaintEventArgs e)
@@ -672,6 +714,8 @@ namespace OneTab_Order
          }
       }
 
+      #endregion
+
       private void Form1_KeyDown(object sender, KeyEventArgs e)
       {
          if (e.Control && e.KeyCode == Keys.F) // Detect Ctrl+F
@@ -680,9 +724,11 @@ namespace OneTab_Order
             tbFind.SelectAll();
             e.SuppressKeyPress = true; // Prevent the default behavior
          }
+         if (e.KeyCode == Keys.Escape && !Settings.originalWindowState)
+         {
+            RestoreOriginalState();
+         }
       }
-
-      #endregion
 
       private void btnOpenSelectedBrowserOnOneTabUrl_Click(object sender, EventArgs e)
       {
@@ -923,5 +969,404 @@ namespace OneTab_Order
          }
       }
 
+
+
+      #region Get Samples
+      private List<(Rectangle refRect, Rectangle sampleRect, Point searchStart)> entries = new();
+
+      private Point? firstRef = null;
+      private Point? secondRef = null;
+      private Point? firstSample = null;
+      private Point? secondSample = null;
+      private Point? searchStart = null;
+
+      private int clickPhase = 0; // 0-4 podle fáze kliknutí
+      private int sampleIndex = 1;
+      private void Form1_MouseDown(object sender, MouseEventArgs e)
+      {
+         switch (clickPhase)
+         {
+            case 0: // první bod REF
+               firstRef = e.Location;
+               clickPhase = 1;
+               break;
+
+            case 1: // druhý bod REF
+               secondRef = e.Location;
+               clickPhase = 2;
+               break;
+
+            case 2: // začátek SAMPLE – jen uvnitř REF
+               if (GetRefRect().Contains(e.Location))
+               {
+                  firstSample = e.Location;
+                  clickPhase = 3;
+               }
+               break;
+
+            case 3: // konec SAMPLE – jen uvnitř REF
+               if (GetRefRect().Contains(e.Location))
+               {
+                  secondSample = e.Location;
+
+                  // uloží obdélníky
+                  Rectangle refRect = GetRefRect();
+                  Rectangle sampleRect = GetSampleRect();
+
+                  // screenshot sample oblasti
+                  Point s1 = this.PointToScreen(firstSample.Value);
+                  Point s2 = this.PointToScreen(secondSample.Value);
+                  Rectangle screenRect = Rectangle.FromLTRB(
+                      Math.Min(s1.X, s2.X),
+                      Math.Min(s1.Y, s2.Y),
+                      Math.Max(s1.X, s2.X),
+                      Math.Max(s1.Y, s2.Y)
+                  );
+
+                  using (Bitmap bmp = new Bitmap(screenRect.Width, screenRect.Height))
+                  {
+                     using (Graphics g = Graphics.FromImage(bmp))
+                     {
+                        g.CopyFromScreen(screenRect.Left, screenRect.Top, 0, 0, screenRect.Size);
+                     }
+
+                     string dir = Path.Combine(Application.StartupPath, "Samples");
+                     Directory.CreateDirectory(dir);
+                     string file = Path.Combine(dir, $"Sample_{sampleIndex++}.png");
+                     bmp.Save(file);
+                  }
+
+                  clickPhase = 4; // čeká pátý klik
+               }
+               break;
+
+            case 4: // searchStart – jen uvnitř REF
+               if (GetRefRect().Contains(e.Location))
+               {
+                  searchStart = e.Location;
+
+                  // uloží kompletní záznam
+                  Rectangle lastRefRect = GetRefRect();
+                  Rectangle lastSampleRect = GetSampleRect();
+
+                  entries.Add((lastRefRect, lastSampleRect, this.PointToScreen(searchStart.Value)));
+
+                  // reset a návrat do původního stavu
+                  firstRef = secondRef = firstSample = secondSample = searchStart = null;
+                  clickPhase = 0;
+                  RestoreOriginalState();
+               }
+               break;
+         }
+
+         Invalidate();
+         PaintLayeredForm();
+      }
+
+      // --- pomocné metody pro získání obdélníků ---
+      private Rectangle GetRefRect()
+      {
+         return Rectangle.FromLTRB(
+             Math.Min(firstRef.Value.X, secondRef.Value.X),
+             Math.Min(firstRef.Value.Y, secondRef.Value.Y),
+             Math.Max(firstRef.Value.X, secondRef.Value.X),
+             Math.Max(firstRef.Value.Y, secondRef.Value.Y)
+         );
+      }
+
+      private Rectangle GetSampleRect()
+      {
+         return Rectangle.FromLTRB(
+             Math.Min(firstSample.Value.X, secondSample.Value.X),
+             Math.Min(firstSample.Value.Y, secondSample.Value.Y),
+             Math.Max(firstSample.Value.X, secondSample.Value.X),
+             Math.Max(firstSample.Value.Y, secondSample.Value.Y)
+         );
+      }
+
+
+
+      private void btnGetSamples_Click(object sender, EventArgs e)
+      {
+         SwitchPanelVisible(null);
+
+         // uložíme původní stav
+         originalBorderStyle = FormBorderStyle;
+         originalWindowState = WindowState;
+         originalBounds = Bounds;
+         Settings.originalWindowState = false; //to keydown esc for escape to original window state
+
+         // Nastavení okna
+         FormBorderStyle = FormBorderStyle.None; // Bez okrajů
+         WindowState = FormWindowState.Maximized; // Fullscreen
+         TopMost = true; // Nad všemi okny (volitelné)
+
+         // Přidáme styl WS_EX_LAYERED
+         int exStyle = GetWindowLong(Handle, GWL_EXSTYLE);
+         SetWindowLong(Handle, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+
+         // vykreslení „téměř průhledného“ pozadí (alfa = 1)
+         PaintLayeredForm();
+
+      }
+
+
+      private FormBorderStyle originalBorderStyle;
+      private FormWindowState originalWindowState;
+      private Rectangle originalBounds;
+      private void RestoreOriginalState()
+      {
+         // zrušíme layered mód
+         int exStyle = GetWindowLong(Handle, GWL_EXSTYLE);
+         exStyle &= ~WS_EX_LAYERED;
+         SetWindowLong(Handle, GWL_EXSTYLE, exStyle);
+
+         // obnovíme původní parametry
+         FormBorderStyle = originalBorderStyle;
+         WindowState = originalWindowState;
+         Bounds = originalBounds;
+         TopMost = false;
+         Settings.originalWindowState = true;
+         SwitchPanelVisible(panelRPASettings);
+
+         clickPhase = 0;
+         firstRef = secondRef = firstSample = secondSample = searchStart = null;
+
+         Refresh();
+      }
+
+      #region transparent window
+      // --- níže jsou WinAPI metody + UpdateLayeredWindow logika ---
+
+      const int WS_EX_LAYERED = 0x80000;
+      const int GWL_EXSTYLE = -20;
+      const int ULW_ALPHA = 0x02;
+      const byte AC_SRC_OVER = 0x00;
+      const byte AC_SRC_ALPHA = 0x01;
+
+      [DllImport("user32.dll")] static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+      [DllImport("user32.dll")] static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+      [DllImport("user32.dll")] static extern IntPtr GetDC(IntPtr hWnd);
+      [DllImport("user32.dll")] static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+      [DllImport("gdi32.dll")] static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+      [DllImport("gdi32.dll")] static extern bool DeleteDC(IntPtr hdc);
+      [DllImport("gdi32.dll")] static extern IntPtr SelectObject(IntPtr hdc, IntPtr hgdiobj);
+      [DllImport("gdi32.dll")] static extern bool DeleteObject(IntPtr hObject);
+      [DllImport("user32.dll")]
+      static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr hdcDst,
+          ref POINT pptDst, ref SIZE psize, IntPtr hdcSrc, ref POINT pptSrc, int crKey,
+          ref BLENDFUNCTION pblend, int dwFlags);
+
+      [StructLayout(LayoutKind.Sequential)] struct POINT { public int x, y; public POINT(int X, int Y) { x = X; y = Y; } }
+      [StructLayout(LayoutKind.Sequential)] struct SIZE { public int cx, cy; public SIZE(int CX, int CY) { cx = CX; cy = CY; } }
+      [StructLayout(LayoutKind.Sequential, Pack = 1)]
+      struct BLENDFUNCTION { public byte BlendOp, BlendFlags, SourceConstantAlpha, AlphaFormat; }
+
+      private void PaintLayeredForm()
+      {
+         int width = Width;
+         int height = Height;
+
+         using (var bmp = new Bitmap(width, height, PixelFormat.Format32bppArgb))
+         using (var g = Graphics.FromImage(bmp))
+         {
+            // průhledné pozadí (alfa=1 -> zachytí myš)
+            g.Clear(Color.FromArgb(1, 0, 0, 0));
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+            // --- vykreslíme již uložené páry (v client souřadnicích) ---
+            using (var penSavedRef = new Pen(Color.FromArgb(200, Color.Lime), 2))
+            using (var penSavedSample = new Pen(Color.FromArgb(200, Color.DeepSkyBlue), 2))
+            {
+               foreach (var (refRect, sampleRect, searchPtScreen) in entries)
+               {
+                  g.DrawRectangle(penSavedRef, refRect);
+                  g.DrawRectangle(penSavedSample, sampleRect);
+
+                  // pokud je uložený searchStart v entries jako screen point, překlopíme do client coords
+                  try
+                  {
+                     Point searchClient = this.PointToClient(searchPtScreen);
+                     g.FillEllipse(Brushes.OrangeRed, searchClient.X - 4, searchClient.Y - 4, 8, 8);
+                  }
+                  catch { /* ignore */ }
+               }
+            }
+
+            // pera / štětce pro aktivní kreslení
+            using (var penRef = new Pen(Color.Lime, 2))
+            using (var penSample = new Pen(Color.DeepSkyBlue, 2))
+            using (var penSearch = new Pen(Color.Orange, 2))
+            using (var brushPoint = new SolidBrush(Color.Red))
+            using (var font = new Font("Segoe UI", 11, FontStyle.Bold))
+            using (var textBrush = new SolidBrush(Color.White))
+            {
+               // --- DYNAMICKÁ TEČKA před prvním klikem (clickPhase == 0) ---
+               if (clickPhase == 0 && currentMouse.HasValue && !firstRef.HasValue)
+               {
+                  var p = currentMouse.Value;
+                  g.FillEllipse(brushPoint, p.X - 4, p.Y - 4, 8, 8);
+                  //g.DrawString("Ref start (preview)", font, textBrush, p.X + 8, p.Y - 10);
+               }
+
+               // === REF obdélník náhled (fáze 1: máme firstRef, druhý bod je myš) ===
+               if (firstRef.HasValue && (secondRef.HasValue || (clickPhase == 1 && currentMouse.HasValue)))
+               {
+                  var second = secondRef ?? currentMouse.Value;
+                  Rectangle refRect = Rectangle.FromLTRB(
+                      Math.Min(firstRef.Value.X, second.X),
+                      Math.Min(firstRef.Value.Y, second.Y),
+                      Math.Max(firstRef.Value.X, second.X),
+                      Math.Max(firstRef.Value.Y, second.Y)
+                  );
+                  g.DrawRectangle(penRef, refRect);
+                  g.DrawString("Screenshot", font, textBrush, refRect.Left + 4, Math.Max(refRect.Top - 22, 4));
+               }
+
+               // --- DYNAMICKÁ TEČKA před třetím klikem (clickPhase == 2) ---
+               if (clickPhase == 2 && currentMouse.HasValue && !firstSample.HasValue)
+               {
+                  var p = currentMouse.Value;
+                  g.FillEllipse(brushPoint, p.X - 4, p.Y - 4, 8, 8);
+                  //g.DrawString("Sample start (preview)", font, textBrush, p.X + 8, p.Y - 10);
+               }
+
+               // === SAMPLE obdélník náhled (fáze 3: máme firstSample, druhý bod je myš) ===
+               if (firstSample.HasValue && (secondSample.HasValue || (clickPhase == 3 && currentMouse.HasValue)))
+               {
+                  var second = secondSample ?? currentMouse.Value;
+                  Rectangle sampleRect = Rectangle.FromLTRB(
+                      Math.Min(firstSample.Value.X, second.X),
+                      Math.Min(firstSample.Value.Y, second.Y),
+                      Math.Max(firstSample.Value.X, second.X),
+                      Math.Max(firstSample.Value.Y, second.Y)
+                  );
+                  g.DrawRectangle(penSample, sampleRect);
+                  g.DrawString("Sample", font, textBrush, sampleRect.Left + 4, Math.Max(sampleRect.Top - 22, 4));
+               }
+
+               // --- DYNAMICKÁ TEČKA pro searchStart (clickPhase == 4) ---
+               if (clickPhase == 4 && currentMouse.HasValue && !searchStart.HasValue)
+               {
+                  var p = currentMouse.Value;
+                  //g.DrawEllipse(penSearch, p.X - 6, p.Y - 6, 12, 12);
+                  g.FillEllipse(brushPoint, p.X - 3, p.Y - 3, 6, 6);
+                  //g.DrawString("Search start (preview)", font, textBrush, p.X + 8, p.Y - 10);
+               }
+
+               // --- UZAMČENÉ BOD Y (po kliknutí) ---
+               if (firstRef.HasValue)
+                  g.FillEllipse(brushPoint, firstRef.Value.X - 3, firstRef.Value.Y - 3, 6, 6);
+               if (secondRef.HasValue)
+                  g.FillEllipse(brushPoint, secondRef.Value.X - 3, secondRef.Value.Y - 3, 6, 6);
+               if (firstSample.HasValue)
+                  g.FillEllipse(brushPoint, firstSample.Value.X - 3, firstSample.Value.Y - 3, 6, 6);
+               if (secondSample.HasValue)
+                  g.FillEllipse(brushPoint, secondSample.Value.X - 3, secondSample.Value.Y - 3, 6, 6);
+               if (searchStart.HasValue)
+               {
+                  g.DrawEllipse(penSearch, searchStart.Value.X - 6, searchStart.Value.Y - 6, 12, 12);
+                  g.FillEllipse(brushPoint, searchStart.Value.X - 3, searchStart.Value.Y - 3, 6, 6);
+               }
+
+               // --- Stavová nápověda v rohu ---
+               string phaseText = clickPhase switch
+               {
+                  0 => "Krok 1: Klikni pro začátek Screenshot oblasti",
+                  1 => "Krok 2: Klikni pro konec Screenshot oblasti",
+                  2 => "Krok 3: Klikni pro začátek SAMPLE oblasti",
+                  3 => "Krok 4: Klikni pro konec SAMPLE oblasti",
+                  4 => "Krok 5: Klikni pro Start SEARCH bod",
+                  _ => ""
+               };
+               if (!string.IsNullOrEmpty(phaseText))
+               {
+                  var shadowBrush = new SolidBrush(Color.FromArgb(180, 0, 0, 0));
+                  g.DrawString(phaseText, font, shadowBrush, 21, 21);
+                  g.DrawString(phaseText, font, Brushes.Yellow, 20, 20);
+                  shadowBrush.Dispose();
+               }
+            }
+
+            // --- aktualizace layered okna ---
+            ApplyLayerBitmap(bmp);
+         }
+      }
+
+      private void ApplyLayerBitmap(Bitmap bmp)
+      {
+         IntPtr screenDc = GetDC(IntPtr.Zero);
+         IntPtr memDc = CreateCompatibleDC(screenDc);
+         IntPtr hBitmap = bmp.GetHbitmap(Color.FromArgb(0));
+         IntPtr oldBitmap = SelectObject(memDc, hBitmap);
+
+         POINT topPos = new POINT(Left, Top);
+         SIZE size = new SIZE(bmp.Width, bmp.Height);
+         POINT pointSource = new POINT(0, 0);
+
+         BLENDFUNCTION blend = new BLENDFUNCTION
+         {
+            BlendOp = AC_SRC_OVER,
+            BlendFlags = 0,
+            SourceConstantAlpha = 255,
+            AlphaFormat = AC_SRC_ALPHA
+         };
+
+         UpdateLayeredWindow(this.Handle, screenDc, ref topPos, ref size, memDc, ref pointSource, 0, ref blend, ULW_ALPHA);
+
+         SelectObject(memDc, oldBitmap);
+         DeleteObject(hBitmap);
+         DeleteDC(memDc);
+         ReleaseDC(IntPtr.Zero, screenDc);
+      }
+
+      #endregion
+
+      #endregion
+
+
+      private void btnSaveSelectedBrowserOneTabUrl_Click(object sender, EventArgs e)
+      {
+         //save to db
+      }
+
+      private void cmbSelectedBrowser_SelectedIndexChanged(object sender, EventArgs e)
+      {
+         tbOneTabUrl.Clear(); //basic - then load from db
+      }
+
+      private Point ConstrainToRefRect(Point p)
+      {
+         if (!firstRef.HasValue || !secondRef.HasValue)
+            return p; // ještě není definován REF
+
+         Rectangle refRect = Rectangle.FromLTRB(
+             Math.Min(firstRef.Value.X, secondRef.Value.X),
+             Math.Min(firstRef.Value.Y, secondRef.Value.Y),
+             Math.Max(firstRef.Value.X, secondRef.Value.X),
+             Math.Max(firstRef.Value.Y, secondRef.Value.Y)
+         );
+
+         int x = Math.Max(refRect.Left, Math.Min(p.X, refRect.Right));
+         int y = Math.Max(refRect.Top, Math.Min(p.Y, refRect.Bottom));
+
+         return new Point(x, y);
+      }
+
+      private Point? currentMouse = null; // pro dynamické vykreslení
+      private void Form1_MouseMove(object sender, MouseEventArgs e)
+      {
+         currentMouse = e.Location;
+         if (!Settings.originalWindowState)
+         {
+            // pokud jsme ve fázi sample nebo search, omezíme myš na REF obdélník
+            if ((clickPhase == 2 || clickPhase == 3 || clickPhase == 4) && firstRef.HasValue && secondRef.HasValue)
+            {
+               currentMouse = ConstrainToRefRect(currentMouse.Value);
+            }
+
+            PaintLayeredForm();
+         }
+      }
    }
 }
