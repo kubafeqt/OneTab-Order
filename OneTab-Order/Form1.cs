@@ -6,6 +6,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text;
 using static System.Windows.Forms.LinkLabel;
 
 #region comments
@@ -14,9 +15,15 @@ using static System.Windows.Forms.LinkLabel;
 //can be extracted to txt, html with <a href=""> (+list for copy) -> basic now (txt)
 //remove duplicates from extracted, even in rtbText -> working
 //searching - builded in finder - get shortcut ctrl+f -> top now
+//delete all from and after - &/?pp=, &/?utm, &/?fbclid, - check other tracking queries -> remove tracking queries checkbox -> basic now (?/$something=)
+//get samples - phase 4: enter: same as samplestart, any phase: backspace: back to previous phase
 //
-//delete all from and after - &/?pp=, &/?utm, &/?fbclid, - check other tracking queries -> remove tracking queries checkbox
+//todo:
+//image detection - marshal, then RPA like action -> check any sample is there - mouseleftclick, enter - till end (delete all tabs)
+//save settings to db or file (json, xml, ini, ...)
 //
+//-> operuji s vygenerovaným kódem, aniž bych do detailu musel vědět jak v jádru funguje
+//-> Přesně tak – můžeš s tím zacházet jako s “černou skříňkou”: používáš metody a vlastnosti jen pro jejich výsledek, aniž bys musel chápat všechny interní algoritmy.
 //
 
 #endregion
@@ -25,6 +32,7 @@ namespace OneTab_Order
 {
    public partial class Form1 : Form
    {
+      #region Load and init
       System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
       public Form1()
       {
@@ -65,7 +73,9 @@ namespace OneTab_Order
          }
       }
 
-      #region switch panels
+      #endregion
+
+      #region Switch panels
       private void SwitchPanelVisible(Panel? panelToShow)
       {
          Dictionary<Panel, Button> panelButtonMap = new Dictionary<Panel, Button>()
@@ -105,6 +115,7 @@ namespace OneTab_Order
 
       #endregion
 
+      #region Panel main only
       private void ReAddTabs(ref bool notRemoveEmptyEntries)
       {
          notRemoveEmptyEntries = !notRemoveEmptyEntries ? cboxRemoveOnly.Checked : notRemoveEmptyEntries; //true = true
@@ -370,46 +381,6 @@ namespace OneTab_Order
          }
       }
 
-      Point drawlineX = new Point(519, 519);
-      Point drawlineY = new Point(0, 200);
-      private void Form1_Paint(object sender, PaintEventArgs e)
-      {
-         Graphics gfx = e.Graphics;
-         if (panelMain.Visible)
-         {
-            Pen penBlack = new Pen(Brushes.Black, 2);
-            gfx.DrawLine(penBlack, panelMain.Location.X + drawlineX.X, drawlineY.X, panelMain.Location.X + drawlineX.Y, drawlineY.Y);
-         }
-
-         foreach (var (refRect, sampleRect, searchStart) in entries)
-         {
-            using (Pen p1 = new Pen(Color.Red, 2)) gfx.DrawRectangle(p1, refRect);
-            using (Pen p2 = new Pen(Color.Blue, 2)) gfx.DrawRectangle(p2, sampleRect);
-         }
-
-         if (firstRef.HasValue && clickPhase >= 1)
-            gfx.FillRectangle(Brushes.Red, firstRef.Value.X - 2, firstRef.Value.Y - 2, 4, 4);
-
-         if (firstRef.HasValue && secondRef.HasValue && clickPhase >= 2)
-            gfx.DrawRectangle(Pens.Red, Rectangle.FromLTRB(
-                Math.Min(firstRef.Value.X, secondRef.Value.X),
-                Math.Min(firstRef.Value.Y, secondRef.Value.Y),
-                Math.Max(firstRef.Value.X, secondRef.Value.X),
-                Math.Max(firstRef.Value.Y, secondRef.Value.Y)
-            ));
-
-         if (firstSample.HasValue && clickPhase >= 3)
-            gfx.FillRectangle(Brushes.Blue, firstSample.Value.X - 2, firstSample.Value.Y - 2, 4, 4);
-
-         if (firstSample.HasValue && secondSample.HasValue && clickPhase >= 3)
-            gfx.DrawRectangle(Pens.Blue, Rectangle.FromLTRB(
-                Math.Min(firstSample.Value.X, secondSample.Value.X),
-                Math.Min(firstSample.Value.Y, secondSample.Value.Y),
-                Math.Max(firstSample.Value.X, secondSample.Value.X),
-                Math.Max(firstSample.Value.Y, secondSample.Value.Y)
-            ));
-      }
-
       private void panelMain_Paint(object sender, PaintEventArgs e)
       {
          Graphics g = e.Graphics;
@@ -456,7 +427,7 @@ namespace OneTab_Order
 
       #endregion
 
-      #region searching text
+      #region Searching text logic
       private int lastSearchPosition = 0;
       private string lastSearchText = "";
       private void btnFindNext_Click(object sender, EventArgs e)
@@ -716,20 +687,9 @@ namespace OneTab_Order
 
       #endregion
 
-      private void Form1_KeyDown(object sender, KeyEventArgs e)
-      {
-         if (e.Control && e.KeyCode == Keys.F) // Detect Ctrl+F
-         {
-            tbFind.Focus();
-            tbFind.SelectAll();
-            e.SuppressKeyPress = true; // Prevent the default behavior
-         }
-         if (e.KeyCode == Keys.Escape && !Settings.originalWindowState)
-         {
-            RestoreOriginalState();
-         }
-      }
+      #endregion
 
+      #region Open Browser logic
       private void btnOpenSelectedBrowserOnOneTabUrl_Click(object sender, EventArgs e)
       {
          //Process.Start(new ProcessStartInfo(tbOneTabUrl.Text) { UseShellExecute = true });
@@ -969,9 +929,120 @@ namespace OneTab_Order
          }
       }
 
+      #endregion
 
+      Point drawlineX = new Point(519, 519);
+      Point drawlineY = new Point(0, 200);
+      private void Form1_Paint(object sender, PaintEventArgs e)
+      {
+         Graphics gfx = e.Graphics;
+         if (panelMain.Visible)
+         {
+            Pen penBlack = new Pen(Brushes.Black, 2);
+            gfx.DrawLine(penBlack, panelMain.Location.X + drawlineX.X, drawlineY.X, panelMain.Location.X + drawlineX.Y, drawlineY.Y);
+         }
 
-      #region Get Samples
+         foreach (var (refRect, sampleRect, searchStart) in entries)
+         {
+            using (Pen p1 = new Pen(Color.Red, 2)) gfx.DrawRectangle(p1, refRect);
+            using (Pen p2 = new Pen(Color.Blue, 2)) gfx.DrawRectangle(p2, sampleRect);
+         }
+
+         if (firstRef.HasValue && clickPhase >= 1)
+            gfx.FillRectangle(Brushes.Red, firstRef.Value.X - 2, firstRef.Value.Y - 2, 4, 4);
+
+         if (firstRef.HasValue && secondRef.HasValue && clickPhase >= 2)
+            gfx.DrawRectangle(Pens.Red, Rectangle.FromLTRB(
+                Math.Min(firstRef.Value.X, secondRef.Value.X),
+                Math.Min(firstRef.Value.Y, secondRef.Value.Y),
+                Math.Max(firstRef.Value.X, secondRef.Value.X),
+                Math.Max(firstRef.Value.Y, secondRef.Value.Y)
+            ));
+
+         if (firstSample.HasValue && clickPhase >= 3)
+            gfx.FillRectangle(Brushes.Blue, firstSample.Value.X - 2, firstSample.Value.Y - 2, 4, 4);
+
+         if (firstSample.HasValue && secondSample.HasValue && clickPhase >= 3)
+            gfx.DrawRectangle(Pens.Blue, Rectangle.FromLTRB(
+                Math.Min(firstSample.Value.X, secondSample.Value.X),
+                Math.Min(firstSample.Value.Y, secondSample.Value.Y),
+                Math.Max(firstSample.Value.X, secondSample.Value.X),
+                Math.Max(firstSample.Value.Y, secondSample.Value.Y)
+            ));
+      }
+
+      private void Form1_KeyDown(object sender, KeyEventArgs e)
+      {
+         if (e.Control && e.KeyCode == Keys.F) // Detect Ctrl+F
+         {
+            tbFind.Focus();
+            tbFind.SelectAll();
+            e.SuppressKeyPress = true; // Prevent the default behavior
+         }
+         if (!Settings.originalWindowState)
+         {
+            if (e.KeyCode == Keys.Escape)
+            {
+               RestoreOriginalState();
+            }
+            if (e.KeyCode == Keys.Enter)
+            {
+               if (clickPhase == 4)
+               {
+                  // Simuluj kliknutí searchStart na currentMouse (nebo nic, pokud není)
+                  if (currentMouse.HasValue && GetRefRect().Contains(currentMouse.Value))
+                  {
+                     searchStart = firstSample.Value;
+
+                     Rectangle lastRefRect = GetRefRect();
+                     Rectangle lastSampleRect = GetSampleRect();
+
+                     entries.Add((lastRefRect, lastSampleRect, this.PointToScreen(searchStart.Value)));
+
+                     // Reset a návrat
+                     firstRef = secondRef = firstSample = secondSample = searchStart = null;
+                     clickPhase = 0;
+                     RestoreOriginalState();
+                     PaintLayeredForm();
+                  }
+               }
+
+               e.Handled = true;
+               return;
+            }
+
+            if (e.KeyCode == Keys.Back)
+            {
+               switch (clickPhase)
+               {
+                  case 1:
+                     firstRef = null;
+                     clickPhase = 0;
+                     break;
+                  case 2:
+                     secondRef = null;
+                     clickPhase = 1;
+                     break;
+                  case 3:
+                     firstSample = null;
+                     clickPhase = 2;
+                     break;
+                  case 4:
+                     secondSample = null;
+                     clickPhase = 3;
+                     break;
+                  default:
+                     break;
+               }
+
+               PaintLayeredForm();
+               e.Handled = true;
+               return;
+            }
+         }
+      }
+
+      #region Get Samples logic
       private List<(Rectangle refRect, Rectangle sampleRect, Point searchStart)> entries = new();
 
       private Point? firstRef = null;
@@ -982,85 +1053,110 @@ namespace OneTab_Order
 
       private int clickPhase = 0; // 0-4 podle fáze kliknutí
       private int sampleIndex = 1;
+      Rectangle screenRect = Rectangle.Empty;
       private void Form1_MouseDown(object sender, MouseEventArgs e)
       {
-         switch (clickPhase)
+         if (!Settings.originalWindowState)
          {
-            case 0: // první bod REF
-               firstRef = e.Location;
-               clickPhase = 1;
-               break;
+            switch (clickPhase)
+            {
+               case 0: // první bod REF
+                  firstRef = e.Location;
+                  clickPhase = 1;
+                  break;
 
-            case 1: // druhý bod REF
-               secondRef = e.Location;
-               clickPhase = 2;
-               break;
+               case 1: // druhý bod REF
+                  secondRef = e.Location;
+                  clickPhase = 2;
+                  break;
 
-            case 2: // začátek SAMPLE – jen uvnitř REF
-               if (GetRefRect().Contains(e.Location))
-               {
-                  firstSample = e.Location;
-                  clickPhase = 3;
-               }
-               break;
-
-            case 3: // konec SAMPLE – jen uvnitř REF
-               if (GetRefRect().Contains(e.Location))
-               {
-                  secondSample = e.Location;
-
-                  // uloží obdélníky
-                  Rectangle refRect = GetRefRect();
-                  Rectangle sampleRect = GetSampleRect();
-
-                  // screenshot sample oblasti
-                  Point s1 = this.PointToScreen(firstSample.Value);
-                  Point s2 = this.PointToScreen(secondSample.Value);
-                  Rectangle screenRect = Rectangle.FromLTRB(
-                      Math.Min(s1.X, s2.X),
-                      Math.Min(s1.Y, s2.Y),
-                      Math.Max(s1.X, s2.X),
-                      Math.Max(s1.Y, s2.Y)
-                  );
-
-                  using (Bitmap bmp = new Bitmap(screenRect.Width, screenRect.Height))
+               case 2: // začátek SAMPLE – jen uvnitř REF
+                  if (GetRefRect().Contains(e.Location))
                   {
-                     using (Graphics g = Graphics.FromImage(bmp))
+                     firstSample = e.Location;
+                     clickPhase = 3;
+                  }
+                  break;
+
+               case 3: // konec SAMPLE – jen uvnitř REF
+                  if (GetRefRect().Contains(e.Location))
+                  {
+                     secondSample = e.Location;
+
+                     // uloží obdélníky
+                     Rectangle refRect = GetRefRect();
+                     Rectangle sampleRect = GetSampleRect();
+
+                     // screenshot sample oblasti
+                     Point s1 = PointToScreen(firstSample.Value);
+                     Point s2 = PointToScreen(secondSample.Value);
+                     screenRect = Rectangle.FromLTRB(
+                         Math.Min(s1.X, s2.X),
+                         Math.Min(s1.Y, s2.Y),
+                         Math.Max(s1.X, s2.X),
+                         Math.Max(s1.Y, s2.Y)
+                     );
+
+                     clickPhase = 4; // čeká pátý klik
+                  }
+                  break;
+
+               case 4: // searchStart – jen uvnitř REF
+                  if (GetRefRect().Contains(e.Location))
+                  {
+                     // --- ULOŽ SAMPLE BEZ OVERLAY ---
+                     bool wasVisible = Visible;
+                     Visible = false; // dočasně schováme overlay
+
+                     // malá pauza, aby se systém stihl překreslit (jinak se overlay může zachytit)
+                     Application.DoEvents();
+                     Thread.Sleep(100);
+
+                     using (Bitmap bmp = new Bitmap(screenRect.Width, screenRect.Height))
                      {
-                        g.CopyFromScreen(screenRect.Left, screenRect.Top, 0, 0, screenRect.Size);
+                        using (Graphics g = Graphics.FromImage(bmp))
+                        {
+                           g.CopyFromScreen(screenRect.Left, screenRect.Top, 0, 0, screenRect.Size);
+                        }
+
+                        using (var md5 = MD5.Create())
+                        {
+                           string timeData = DateTime.UtcNow.ToString(); // unikátní časový údaj
+                           byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(timeData));
+                           string hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                           //todo: potom uložit do db
+
+                           string dir = Path.Combine(Application.StartupPath, "Samples");
+                           Directory.CreateDirectory(dir);
+                           string file = Path.Combine(dir, $"Sample_{hash}.png");
+                           bmp.Save(file);
+                        }
                      }
 
-                     string dir = Path.Combine(Application.StartupPath, "Samples");
-                     Directory.CreateDirectory(dir);
-                     string file = Path.Combine(dir, $"Sample_{sampleIndex++}.png");
-                     bmp.Save(file);
+                     Visible = wasVisible; // vrátíme overlay zpět
+                     Application.DoEvents();
+                     PaintLayeredForm(); // obnovíme průhlednou vrstvu
+
+                     //poslední krok:
+                     searchStart = e.Location;
+
+                     // uloží kompletní záznam
+                     Rectangle lastRefRect = GetRefRect();
+                     Rectangle lastSampleRect = GetSampleRect();
+
+                     entries.Add((lastRefRect, lastSampleRect, PointToScreen(searchStart.Value)));
+
+                     // reset a návrat do původního stavu
+                     firstRef = secondRef = firstSample = secondSample = searchStart = null;
+                     clickPhase = 0;
+                     RestoreOriginalState();
                   }
+                  break;
+            }
 
-                  clickPhase = 4; // čeká pátý klik
-               }
-               break;
-
-            case 4: // searchStart – jen uvnitř REF
-               if (GetRefRect().Contains(e.Location))
-               {
-                  searchStart = e.Location;
-
-                  // uloží kompletní záznam
-                  Rectangle lastRefRect = GetRefRect();
-                  Rectangle lastSampleRect = GetSampleRect();
-
-                  entries.Add((lastRefRect, lastSampleRect, this.PointToScreen(searchStart.Value)));
-
-                  // reset a návrat do původního stavu
-                  firstRef = secondRef = firstSample = secondSample = searchStart = null;
-                  clickPhase = 0;
-                  RestoreOriginalState();
-               }
-               break;
+            Invalidate();
+            PaintLayeredForm();
          }
-
-         Invalidate();
-         PaintLayeredForm();
       }
 
       // --- pomocné metody pro získání obdélníků ---
@@ -1084,7 +1180,39 @@ namespace OneTab_Order
          );
       }
 
+      private Point ConstrainToRefRect(Point p)
+      {
+         if (!firstRef.HasValue || !secondRef.HasValue)
+            return p; // ještě není definován REF
 
+         Rectangle refRect = Rectangle.FromLTRB(
+             Math.Min(firstRef.Value.X, secondRef.Value.X),
+             Math.Min(firstRef.Value.Y, secondRef.Value.Y),
+             Math.Max(firstRef.Value.X, secondRef.Value.X),
+             Math.Max(firstRef.Value.Y, secondRef.Value.Y)
+         );
+
+         int x = Math.Max(refRect.Left, Math.Min(p.X, refRect.Right));
+         int y = Math.Max(refRect.Top, Math.Min(p.Y, refRect.Bottom));
+
+         return new Point(x, y);
+      }
+
+      private Point? currentMouse = null; // pro dynamické vykreslení
+      private void Form1_MouseMove(object sender, MouseEventArgs e)
+      {
+         currentMouse = e.Location;
+         if (!Settings.originalWindowState)
+         {
+            // pokud jsme ve fázi sample nebo search, omezíme myš na REF obdélník
+            if ((clickPhase == 2 || clickPhase == 3 || clickPhase == 4) && firstRef.HasValue && secondRef.HasValue)
+            {
+               currentMouse = ConstrainToRefRect(currentMouse.Value);
+            }
+
+            PaintLayeredForm();
+         }
+      }
 
       private void btnGetSamples_Click(object sender, EventArgs e)
       {
@@ -1109,7 +1237,6 @@ namespace OneTab_Order
          PaintLayeredForm();
 
       }
-
 
       private FormBorderStyle originalBorderStyle;
       private FormWindowState originalWindowState;
@@ -1324,7 +1451,6 @@ namespace OneTab_Order
 
       #endregion
 
-
       private void btnSaveSelectedBrowserOneTabUrl_Click(object sender, EventArgs e)
       {
          //save to db
@@ -1335,38 +1461,5 @@ namespace OneTab_Order
          tbOneTabUrl.Clear(); //basic - then load from db
       }
 
-      private Point ConstrainToRefRect(Point p)
-      {
-         if (!firstRef.HasValue || !secondRef.HasValue)
-            return p; // ještě není definován REF
-
-         Rectangle refRect = Rectangle.FromLTRB(
-             Math.Min(firstRef.Value.X, secondRef.Value.X),
-             Math.Min(firstRef.Value.Y, secondRef.Value.Y),
-             Math.Max(firstRef.Value.X, secondRef.Value.X),
-             Math.Max(firstRef.Value.Y, secondRef.Value.Y)
-         );
-
-         int x = Math.Max(refRect.Left, Math.Min(p.X, refRect.Right));
-         int y = Math.Max(refRect.Top, Math.Min(p.Y, refRect.Bottom));
-
-         return new Point(x, y);
-      }
-
-      private Point? currentMouse = null; // pro dynamické vykreslení
-      private void Form1_MouseMove(object sender, MouseEventArgs e)
-      {
-         currentMouse = e.Location;
-         if (!Settings.originalWindowState)
-         {
-            // pokud jsme ve fázi sample nebo search, omezíme myš na REF obdélník
-            if ((clickPhase == 2 || clickPhase == 3 || clickPhase == 4) && firstRef.HasValue && secondRef.HasValue)
-            {
-               currentMouse = ConstrainToRefRect(currentMouse.Value);
-            }
-
-            PaintLayeredForm();
-         }
-      }
    }
 }
