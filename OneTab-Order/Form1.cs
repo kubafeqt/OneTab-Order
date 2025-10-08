@@ -1463,11 +1463,22 @@ namespace OneTab_Order
       private void btnSaveSelectedBrowserOneTabUrl_Click(object sender, EventArgs e)
       {
          //save to db
+         string browserName = cmbSelectedBrowser.SelectedItem.ToString().Replace("default:", string.Empty).Trim();
+         string oneTabUrl = tbOneTabUrl.Text;
+         DB_Access.SaveBrowserOneTabUrl(browserName, oneTabUrl);
       }
 
+      string lastSelectedBrowserItem;
       private void cmbSelectedBrowser_SelectedIndexChanged(object sender, EventArgs e)
       {
-         tbOneTabUrl.Clear(); //basic - then load from db
+         //tbOneTabUrl.Clear(); //basic - then load from db
+         string selectedItem = cmbSelectedBrowser.SelectedItem.ToString().Replace("default:", string.Empty).Trim();
+         if (selectedItem != lastSelectedBrowserItem) //selected browser changed
+         {
+            string oneTabUrl = DB_Access.LoadBrowserOneTabUrl(selectedItem);
+            tbOneTabUrl.Text = oneTabUrl;
+         }
+         lastSelectedBrowserItem = selectedItem;
       }
 
       private void btnConnectionTest_Click(object sender, EventArgs e)
@@ -1479,5 +1490,6 @@ namespace OneTab_Order
       {
          OpenFolder("Samples");
       }
+
    }
 }
