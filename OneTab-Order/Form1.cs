@@ -926,7 +926,7 @@ namespace OneTab_Order
             foreach (var subKeyName in key.GetSubKeyNames())
             {
                using (RegistryKey browserKey = key.OpenSubKey(subKeyName))
-               { 
+               {
                   string browserName = (string)browserKey.GetValue(null);
                   if (browserName == null) continue;
                   bool browserExist = cmbSelectedBrowser.Items.Cast<object>()
@@ -1473,6 +1473,11 @@ namespace OneTab_Order
       private void btnConnectionTest_Click(object sender, EventArgs e)
       {
          DB_Access.ConnectionTest();
+      }
+
+      private void btnOpenSamplesFolder_Click(object sender, EventArgs e)
+      {
+         OpenFolder("Samples");
       }
    }
 }

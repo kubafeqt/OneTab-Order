@@ -58,6 +58,7 @@
          btnOpenSavedFolder = new Button();
          panelMain = new Panel();
          panelRPASettings = new Panel();
+         btnOpenSamplesFolder = new Button();
          btnConnectionTest = new Button();
          btnGetSamples = new Button();
          cboxUseClipboard = new CheckBox();
@@ -416,6 +417,7 @@
          // 
          // panelRPASettings
          // 
+         panelRPASettings.Controls.Add(btnOpenSamplesFolder);
          panelRPASettings.Controls.Add(btnConnectionTest);
          panelRPASettings.Controls.Add(btnGetSamples);
          panelRPASettings.Controls.Add(cboxUseClipboard);
@@ -429,6 +431,17 @@
          panelRPASettings.Name = "panelRPASettings";
          panelRPASettings.Size = new Size(1181, 702);
          panelRPASettings.TabIndex = 30;
+         // 
+         // btnOpenSamplesFolder
+         // 
+         btnOpenSamplesFolder.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+         btnOpenSamplesFolder.Location = new Point(838, 52);
+         btnOpenSamplesFolder.Name = "btnOpenSamplesFolder";
+         btnOpenSamplesFolder.Size = new Size(168, 25);
+         btnOpenSamplesFolder.TabIndex = 9;
+         btnOpenSamplesFolder.Text = "open samples folder";
+         btnOpenSamplesFolder.UseVisualStyleBackColor = true;
+         btnOpenSamplesFolder.Click += btnOpenSamplesFolder_Click;
          // 
          // btnConnectionTest
          // 
@@ -613,5 +626,6 @@
       private CheckBox cboxUseClipboard;
       private Button btnGetSamples;
       private Button btnConnectionTest;
+      private Button btnOpenSamplesFolder;
    }
 }
