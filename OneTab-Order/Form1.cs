@@ -22,6 +22,14 @@ using static System.Windows.Forms.LinkLabel;
 //image detection - marshal, then RPA like action -> check any sample is there - mouseleftclick, enter - till end (delete all tabs)
 //save settings to db or file (json, xml, ini, ...)
 //
+//db:
+//save browser and image detection to db
+//create object of image detection from db
+//delete previous sample (loaded hash from db), after creating new one
+//
+//
+//
+//comment:
 //-> operuji s vygenerovaným kódem, aniž bych do detailu musel vědět jak v jádru funguje
 //-> Přesně tak – můžeš s tím zacházet jako s “černou skříňkou”: používáš metody a vlastnosti jen pro jejich výsledek, aniž bys musel chápat všechny interní algoritmy.
 //
@@ -1461,5 +1469,9 @@ namespace OneTab_Order
          tbOneTabUrl.Clear(); //basic - then load from db
       }
 
+      private void btnConnectionTest_Click(object sender, EventArgs e)
+      {
+         DB_Access.ConnectionTest();
+      }
    }
 }

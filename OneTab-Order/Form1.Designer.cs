@@ -58,6 +58,7 @@
          btnOpenSavedFolder = new Button();
          panelMain = new Panel();
          panelRPASettings = new Panel();
+         btnConnectionTest = new Button();
          btnGetSamples = new Button();
          cboxUseClipboard = new CheckBox();
          btnOpenSelectedBrowserOnOneTabUrl = new Button();
@@ -415,6 +416,7 @@
          // 
          // panelRPASettings
          // 
+         panelRPASettings.Controls.Add(btnConnectionTest);
          panelRPASettings.Controls.Add(btnGetSamples);
          panelRPASettings.Controls.Add(cboxUseClipboard);
          panelRPASettings.Controls.Add(btnOpenSelectedBrowserOnOneTabUrl);
@@ -427,6 +429,17 @@
          panelRPASettings.Name = "panelRPASettings";
          panelRPASettings.Size = new Size(1181, 702);
          panelRPASettings.TabIndex = 30;
+         // 
+         // btnConnectionTest
+         // 
+         btnConnectionTest.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+         btnConnectionTest.Location = new Point(698, 51);
+         btnConnectionTest.Name = "btnConnectionTest";
+         btnConnectionTest.Size = new Size(134, 26);
+         btnConnectionTest.TabIndex = 8;
+         btnConnectionTest.Text = "connection test";
+         btnConnectionTest.UseVisualStyleBackColor = true;
+         btnConnectionTest.Click += btnConnectionTest_Click;
          // 
          // btnGetSamples
          // 
@@ -599,5 +612,6 @@
       private Label lbSelectedBrowser;
       private CheckBox cboxUseClipboard;
       private Button btnGetSamples;
+      private Button btnConnectionTest;
    }
 }
