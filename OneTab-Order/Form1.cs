@@ -918,8 +918,9 @@ namespace OneTab_Order
             foreach (var subKeyName in key.GetSubKeyNames())
             {
                using (RegistryKey browserKey = key.OpenSubKey(subKeyName))
-               {
+               { 
                   string browserName = (string)browserKey.GetValue(null);
+                  if (browserName == null) continue;
                   bool browserExist = cmbSelectedBrowser.Items.Cast<object>()
                      .Any(item => item.ToString().Replace("default: ", "").Trim().Contains(browserName));
                   if (browserExist || browserName.Contains("explorer", StringComparison.OrdinalIgnoreCase)) continue;
