@@ -998,24 +998,21 @@ namespace OneTab_Order
             {
                if (clickPhase == 4)
                {
+                  LastClickPhase(currentMouse.Value);
                   // Simuluj kliknutí searchStart na currentMouse (nebo nic, pokud není)
-                  if (currentMouse.HasValue && GetRefRect().Contains(currentMouse.Value))
-                  {
-                     searchStart = firstSample.Value;
-
-                     Rectangle lastRefRect = GetRefRect();
-                     Rectangle lastSampleRect = GetSampleRect();
-
-                     entries.Add((lastRefRect, lastSampleRect, this.PointToScreen(searchStart.Value)));
-
-                     // Reset a návrat
-                     firstRef = secondRef = firstSample = secondSample = searchStart = null;
-                     clickPhase = 0;
-                     RestoreOriginalState();
-                     PaintLayeredForm();
-                  }
+                  //if (currentMouse.HasValue && GetRefRect().Contains(currentMouse.Value))
+                  //{
+                  //   searchStart = firstSample.Value;
+                  //   Rectangle lastRefRect = GetRefRect();
+                  //   Rectangle lastSampleRect = GetSampleRect();
+                  //   entries.Add((lastRefRect, lastSampleRect, this.PointToScreen(searchStart.Value)));
+                  //   // Reset a návrat
+                  //   firstRef = secondRef = firstSample = secondSample = searchStart = null;
+                  //   clickPhase = 0;
+                  //   RestoreOriginalState();
+                  //   PaintLayeredForm();
+                  //}
                }
-
                e.Handled = true;
                return;
             }
@@ -1111,60 +1108,67 @@ namespace OneTab_Order
                   break;
 
                case 4: // searchStart – jen uvnitř REF
-                  if (GetRefRect().Contains(e.Location))
-                  {
-                     // --- ULOŽ SAMPLE BEZ OVERLAY ---
-                     bool wasVisible = Visible;
-                     Visible = false; // dočasně schováme overlay
-
-                     // malá pauza, aby se systém stihl překreslit (jinak se overlay může zachytit)
-                     Application.DoEvents();
-                     Thread.Sleep(100);
-
-                     using (Bitmap bmp = new Bitmap(screenRect.Width, screenRect.Height))
-                     {
-                        using (Graphics g = Graphics.FromImage(bmp))
-                        {
-                           g.CopyFromScreen(screenRect.Left, screenRect.Top, 0, 0, screenRect.Size);
-                        }
-
-                        using (var md5 = MD5.Create())
-                        {
-                           string timeData = DateTime.UtcNow.ToString(); // unikátní časový údaj
-                           byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(timeData));
-                           string hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
-                           //todo: potom uložit do db
-
-                           string dir = Path.Combine(Application.StartupPath, "Samples");
-                           Directory.CreateDirectory(dir);
-                           string file = Path.Combine(dir, $"Sample_{hash}.png");
-                           bmp.Save(file);
-                        }
-                     }
-
-                     Visible = wasVisible; // vrátíme overlay zpět
-                     Application.DoEvents();
-                     PaintLayeredForm(); // obnovíme průhlednou vrstvu
-
-                     //poslední krok:
-                     searchStart = e.Location;
-
-                     // uloží kompletní záznam
-                     Rectangle lastRefRect = GetRefRect();
-                     Rectangle lastSampleRect = GetSampleRect();
-
-                     entries.Add((lastRefRect, lastSampleRect, PointToScreen(searchStart.Value)));
-
-                     // reset a návrat do původního stavu
-                     firstRef = secondRef = firstSample = secondSample = searchStart = null;
-                     clickPhase = 0;
-                     RestoreOriginalState();
-                  }
+                  LastClickPhase(e.Location);
                   break;
             }
-
             Invalidate();
             PaintLayeredForm();
+         }
+      }
+
+      string hash; //for save to db
+      private void LastClickPhase(Point location)
+      {
+         if (GetRefRect().Contains(location))
+         {
+            // --- ULOŽ SAMPLE BEZ OVERLAY ---
+            bool wasVisible = Visible;
+            Visible = false; // dočasně schováme overlay
+
+            // malá pauza, aby se systém stihl překreslit (jinak se overlay může zachytit)
+            Application.DoEvents();
+            Thread.Sleep(100);
+
+            using (Bitmap bmp = new Bitmap(screenRect.Width, screenRect.Height))
+            {
+               using (Graphics g = Graphics.FromImage(bmp))
+               {
+                  g.CopyFromScreen(screenRect.Left, screenRect.Top, 0, 0, screenRect.Size);
+               }
+
+               using (var md5 = MD5.Create())
+               {
+                  string timeData = DateTime.UtcNow.ToString(); // unikátní časový údaj
+                  byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(timeData));
+                  hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+                  //todo: potom uložit do db
+                  
+
+                  string dir = Path.Combine(Application.StartupPath, "Samples");
+                  Directory.CreateDirectory(dir);
+                  string file = Path.Combine(dir, $"Sample_{hash}.png");
+                  bmp.Save(file);
+               }
+            }
+
+            Visible = wasVisible; // vrátíme overlay zpět
+            Application.DoEvents();
+            PaintLayeredForm(); // obnovíme průhlednou vrstvu
+
+            //poslední krok:
+            searchStart = location;
+
+            // uloží kompletní záznam
+            Rectangle lastRefRect = GetRefRect();
+            Rectangle lastSampleRect = GetSampleRect();
+
+            entries.Add((lastRefRect, lastSampleRect, PointToScreen(searchStart.Value)));
+
+            // reset a návrat do původního stavu
+            //firstRef = secondRef = firstSample = secondSample = searchStart = null;
+            //ResetPhases();
+            //clickPhase = 0;
+            RestoreOriginalState();
          }
       }
 
@@ -1218,7 +1222,6 @@ namespace OneTab_Order
             {
                currentMouse = ConstrainToRefRect(currentMouse.Value);
             }
-
             PaintLayeredForm();
          }
       }
@@ -1267,6 +1270,7 @@ namespace OneTab_Order
 
          clickPhase = 0;
          firstRef = secondRef = firstSample = secondSample = searchStart = null;
+         entries.Clear();
 
          Refresh();
       }
@@ -1490,6 +1494,7 @@ namespace OneTab_Order
       {
          OpenFolder("Samples");
       }
+
 
    }
 }
