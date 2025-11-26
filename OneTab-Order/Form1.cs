@@ -12,7 +12,7 @@ using static System.Windows.Forms.LinkLabel;
 #region comments
 
 //
-//Jak z tohoto vytáhnout ty data pro hledání sample na screenshotu - zadání.
+//Jak z tohoto vytáhnout ty data pro hledání sample na screenshotu? - zadání.
 //
 
 
@@ -953,11 +953,12 @@ namespace OneTab_Order
             gfx.DrawLine(penBlack, panelMain.Location.X + drawlineX.X, drawlineY.X, panelMain.Location.X + drawlineX.Y, drawlineY.Y);
          }
 
-         foreach (var (refRect, sampleRect, searchStart) in entries)
-         {
-            using (Pen p1 = new Pen(Color.Red, 2)) gfx.DrawRectangle(p1, refRect);
-            using (Pen p2 = new Pen(Color.Blue, 2)) gfx.DrawRectangle(p2, sampleRect);
-         }
+         // vykreslení již uložených souřadnice - unused -
+         //foreach (var (refRect, sampleRect, searchStart) in entries)
+         //{
+         //   using (Pen p1 = new Pen(Color.Red, 2)) gfx.DrawRectangle(p1, refRect);
+         //   using (Pen p2 = new Pen(Color.Blue, 2)) gfx.DrawRectangle(p2, sampleRect);
+         //}
 
          if (firstRef.HasValue && clickPhase >= 1)
             gfx.FillRectangle(Brushes.Red, firstRef.Value.X - 2, firstRef.Value.Y - 2, 4, 4);
@@ -1051,7 +1052,7 @@ namespace OneTab_Order
       }
 
       #region Get Samples logic
-      private List<(Rectangle refRect, Rectangle sampleRect, Point searchStart)> entries = new();
+     private List<(Rectangle refRect, Rectangle sampleRect, Point searchStart, string hash)> entries = new();
 
       private Point? firstRef = null;
       private Point? secondRef = null;
@@ -1164,7 +1165,7 @@ namespace OneTab_Order
             Rectangle lastRefRect = GetRefRect();
             Rectangle lastSampleRect = GetSampleRect();
 
-            entries.Add((lastRefRect, lastSampleRect, PointToScreen(searchStart.Value)));
+            entries.Add((lastRefRect, lastSampleRect, PointToScreen(searchStart.Value), hash)); //for save to db
 
             // reset a návrat do původního stavu
             //firstRef = secondRef = firstSample = secondSample = searchStart = null;
@@ -1272,7 +1273,7 @@ namespace OneTab_Order
 
          clickPhase = 0;
          firstRef = secondRef = firstSample = secondSample = searchStart = null;
-         entries.Clear();
+         //entries.Clear();
 
          Refresh();
       }
@@ -1320,23 +1321,23 @@ namespace OneTab_Order
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
             // --- vykreslíme již uložené páry (v client souřadnicích) ---
-            using (var penSavedRef = new Pen(Color.FromArgb(200, Color.Lime), 2))
-            using (var penSavedSample = new Pen(Color.FromArgb(200, Color.DeepSkyBlue), 2))
-            {
-               foreach (var (refRect, sampleRect, searchPtScreen) in entries)
-               {
-                  g.DrawRectangle(penSavedRef, refRect);
-                  g.DrawRectangle(penSavedSample, sampleRect);
+            //using (var penSavedRef = new Pen(Color.FromArgb(200, Color.Lime), 2))
+            //using (var penSavedSample = new Pen(Color.FromArgb(200, Color.DeepSkyBlue), 2))
+            //{
+            //   foreach (var (refRect, sampleRect, searchPtScreen) in entries)
+            //   {
+            //      g.DrawRectangle(penSavedRef, refRect);
+            //      g.DrawRectangle(penSavedSample, sampleRect);
 
-                  // pokud je uložený searchStart v entries jako screen point, překlopíme do client coords
-                  try
-                  {
-                     Point searchClient = this.PointToClient(searchPtScreen);
-                     g.FillEllipse(Brushes.OrangeRed, searchClient.X - 4, searchClient.Y - 4, 8, 8);
-                  }
-                  catch { /* ignore */ }
-               }
-            }
+            //      // pokud je uložený searchStart v entries jako screen point, překlopíme do client coords
+            //      try
+            //      {
+            //         Point searchClient = this.PointToClient(searchPtScreen);
+            //         g.FillEllipse(Brushes.OrangeRed, searchClient.X - 4, searchClient.Y - 4, 8, 8);
+            //      }
+            //      catch { /* ignore */ }
+            //   }
+            //}
 
             // pera / štětce pro aktivní kreslení
             using (var penRef = new Pen(Color.Lime, 2))

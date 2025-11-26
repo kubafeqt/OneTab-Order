@@ -1,10 +1,6 @@
 ﻿CREATE TABLE [dbo].[BrowserOneTab] (
-    [BrowserName]       VARCHAR (128)  NOT NULL,
-    [OneTabUrl]         NVARCHAR (512) NULL,
-    [SampleHash]        VARCHAR (64)   NOT NULL,
-    [ScreenStartX]      INT            NOT NULL,
-    [ScreenStartY]      INT            NOT NULL,
-    [RecognitionStartX] INT            NULL,
-    [RecognitionStartY] INT            NULL
+	[BrowserId]			 INT            IDENTITY (1, 1) NOT NULL,
+    [BrowserName]        VARCHAR (128)  NOT NULL,
+    [OneTabUrl]          NVARCHAR (512) NULL,	
+	 CONSTRAINT [PK_BrowserOneTab] PRIMARY KEY CLUSTERED ([BrowserId] ASC),
 );
-
