@@ -27,7 +27,7 @@ namespace OneTab_Order
                {
                   object result = command.ExecuteScalar();
                }
-               MessageBox.Show("Connection is successful.");
+               MessageBox.Show("DB connection is successful.");
             }
             catch (SqlException ex)
             {

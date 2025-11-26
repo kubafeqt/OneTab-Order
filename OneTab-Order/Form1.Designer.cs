@@ -450,7 +450,7 @@
          btnConnectionTest.Name = "btnConnectionTest";
          btnConnectionTest.Size = new Size(134, 26);
          btnConnectionTest.TabIndex = 8;
-         btnConnectionTest.Text = "connection test";
+         btnConnectionTest.Text = "Db connection test";
          btnConnectionTest.UseVisualStyleBackColor = true;
          btnConnectionTest.Click += btnConnectionTest_Click;
          // 

@@ -11,6 +11,12 @@ using static System.Windows.Forms.LinkLabel;
 
 #region comments
 
+//
+//Jak z tohoto vytáhnout ty data pro hledání sample na screenshotu - zadání.
+//
+
+
+///posibilities to do:
 //check for installed -> notepad++, pspad, ... , or notepad -> basic now (just notepad)
 //can be extracted to txt, html with <a href=""> (+list for copy) -> basic now (txt)
 //remove duplicates from extracted, even in rtbText -> working
@@ -28,10 +34,6 @@ using static System.Windows.Forms.LinkLabel;
 //delete previous sample (loaded hash from db), after creating new one
 //
 //
-//
-//comment:
-//-> operuji s vygenerovaným kódem, aniž bych do detailu musel vědět jak v jádru funguje
-//-> Přesně tak – můžeš s tím zacházet jako s “černou skříňkou”: používáš metody a vlastnosti jen pro jejich výsledek, aniž bys musel chápat všechny interní algoritmy.
 //
 
 #endregion
@@ -772,38 +774,6 @@ namespace OneTab_Order
          }
       }
 
-      [DllImport("user32.dll")]
-      [return: MarshalAs(UnmanagedType.Bool)]
-      private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
-
-      private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
-
-      [DllImport("user32.dll")]
-      private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
-
-      static bool BrowserWindowExists(string processName)
-      {
-         bool found = false;
-
-         EnumWindows((hWnd, lParam) =>
-         {
-            GetWindowThreadProcessId(hWnd, out uint pid);
-            try
-            {
-               var p = Process.GetProcessById((int)pid);
-               if (p.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase))
-               {
-                  found = true;
-                  return false; // stop enumeration
-               }
-            }
-            catch { }
-            return true; // continue enumeration
-         }, IntPtr.Zero);
-
-         return found;
-      }
-
       static void LaunchDefaultBrowser(string url)
       {
          string browserCmd = GetDefaultBrowserCommand();
@@ -873,6 +843,38 @@ namespace OneTab_Order
                args = "";
             }
          }
+      }
+
+      [DllImport("user32.dll")]
+      [return: MarshalAs(UnmanagedType.Bool)]
+      private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+      private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+      [DllImport("user32.dll")]
+      private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+      static bool BrowserWindowExists(string processName)
+      {
+         bool found = false;
+
+         EnumWindows((hWnd, lParam) =>
+         {
+            GetWindowThreadProcessId(hWnd, out uint pid);
+            try
+            {
+               var p = Process.GetProcessById((int)pid);
+               if (p.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase))
+               {
+                  found = true;
+                  return false; // stop enumeration
+               }
+            }
+            catch { }
+            return true; // continue enumeration
+         }, IntPtr.Zero);
+
+         return found;
       }
 
       static string GetDefaultBrowserName()
@@ -1302,6 +1304,9 @@ namespace OneTab_Order
       [StructLayout(LayoutKind.Sequential, Pack = 1)]
       struct BLENDFUNCTION { public byte BlendOp, BlendFlags, SourceConstantAlpha, AlphaFormat; }
 
+      /// <summary>
+      /// Paint on transparent windows
+      /// </summary>
       private void PaintLayeredForm()
       {
          int width = Width;
