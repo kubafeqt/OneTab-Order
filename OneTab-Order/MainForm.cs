@@ -40,11 +40,11 @@ using static System.Windows.Forms.LinkLabel;
 
 namespace OneTab_Order
 {
-   public partial class Form1 : Form
+   public partial class MainForm : Form
    {
       #region Load and init
       System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-      public Form1()
+      public MainForm()
       {
          InitializeComponent();
          this.KeyPreview = true; // Formulář dostane všechny key eventy jako první
@@ -1052,7 +1052,7 @@ namespace OneTab_Order
       }
 
       #region Get Samples logic
-     private List<(Rectangle refRect, Rectangle sampleRect, Point searchStart, string hash)> entries = new();
+      //private List<(Rectangle refRect, Point searchStart, string sampleHash, string configName)> entries = new();
 
       private Point? firstRef = null;
       private Point? secondRef = null;
@@ -1145,7 +1145,7 @@ namespace OneTab_Order
                   byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(timeData));
                   hash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
                   //todo: potom uložit do db
-                  
+
 
                   string dir = Path.Combine(Application.StartupPath, "Samples");
                   Directory.CreateDirectory(dir);
@@ -1165,12 +1165,16 @@ namespace OneTab_Order
             Rectangle lastRefRect = GetRefRect();
             Rectangle lastSampleRect = GetSampleRect();
 
-            entries.Add((lastRefRect, lastSampleRect, PointToScreen(searchStart.Value), hash)); //for save to db
+            string selectedBrowser = cmbSelectedBrowser.SelectedItem.ToString().Replace("default:", string.Empty).Trim();
+            //entries.Add((lastRefRect, PointToScreen(searchStart.Value), hash, tbConfigName.Text)); //for save to db
+            DB_Access.SaveImageRecognitionConfig(lastRefRect, PointToScreen(searchStart.Value), hash, tbConfigName.Text,
+               selectedBrowser);
 
             // reset a návrat do původního stavu
             //firstRef = secondRef = firstSample = secondSample = searchStart = null;
             //ResetPhases();
             //clickPhase = 0;
+
             RestoreOriginalState();
          }
       }
@@ -1231,6 +1235,27 @@ namespace OneTab_Order
 
       private void btnGetSamples_Click(object sender, EventArgs e)
       {
+         if (string.IsNullOrWhiteSpace(tbConfigName.Text))
+         {
+            MessageBox.Show("Zadej config name.", "Enter config name");
+            return;
+         }
+
+         //when config name exist for selected browser - update - ask if update
+         if (DB_Access.ConfigNameExist(cmbSelectedBrowser.SelectedItem.ToString(), tbConfigName.Text))
+         {
+            DialogResult result = MessageBox.Show(
+         $"The configuration already exists.\nDo you want to overwrite it?",
+         "Configuration Exists",
+         MessageBoxButtons.YesNo,
+         MessageBoxIcon.Question
+     );
+            if (result == DialogResult.No)
+            {
+               return; // User chose not to overwrite
+            }
+         }
+
          SwitchPanelVisible(null);
 
          // uložíme původní stav
@@ -1482,13 +1507,19 @@ namespace OneTab_Order
       private void cmbSelectedBrowser_SelectedIndexChanged(object sender, EventArgs e)
       {
          //tbOneTabUrl.Clear(); //basic - then load from db
-         string selectedItem = cmbSelectedBrowser.SelectedItem.ToString().Replace("default:", string.Empty).Trim();
-         if (selectedItem != lastSelectedBrowserItem) //selected browser changed
+         string selectedBrowser = cmbSelectedBrowser.SelectedItem.ToString().Replace("default:", string.Empty).Trim();
+         if (selectedBrowser != lastSelectedBrowserItem) //selected browser changed
          {
-            string oneTabUrl = DB_Access.LoadBrowserOneTabUrl(selectedItem);
+            string oneTabUrl = DB_Access.LoadBrowserOneTabUrl(selectedBrowser);
             tbOneTabUrl.Text = oneTabUrl;
          }
-         lastSelectedBrowserItem = selectedItem;
+         lastSelectedBrowserItem = selectedBrowser;
+         cmbSelectedConfigName.Items.Clear();
+         cmbSelectedConfigName.Items.AddRange(DB_Access.LoadBrowserConfigNames(selectedBrowser).ToArray());
+         if (cmbSelectedConfigName.Items.Count > 0)
+         {
+            cmbSelectedConfigName.SelectedIndex = 0;
+         }
       }
 
       private void btnConnectionTest_Click(object sender, EventArgs e)
@@ -1499,6 +1530,72 @@ namespace OneTab_Order
       private void btnOpenSamplesFolder_Click(object sender, EventArgs e)
       {
          OpenFolder("Samples");
+      }
+
+      private void btnDeleteAllTabs_Click(object sender, EventArgs e)
+      {
+         //esc -> stop process
+         string selectedBrowser = cmbSelectedBrowser.SelectedItem.ToString().Replace("default:", string.Empty).Trim();
+         if (cmbSelectedConfigName.Items.Count > 0 && MessageBox.Show(
+             $"Are you sure you want to delete all tabs for {selectedBrowser}?",
+             "Confirm Deletion",
+             MessageBoxButtons.YesNo,
+             MessageBoxIcon.Warning
+         ) == DialogResult.Yes)
+         {
+            string selectedConfigName = cmbSelectedConfigName.SelectedItem.ToString();
+            (Rectangle refRect, Point startSearch, string sampleHash) = DB_Access.LoadImageRecognitionConfig(selectedBrowser, selectedConfigName);
+            Images img = new Images(new(refRect.X, refRect.Y), new(refRect.X + refRect.Width, refRect.Y + refRect.Height), startSearch, sampleHash);
+            RPA.DeleteAllTabsInBrowser(img); //need to be debugged -> imgs
+            //++open browser logic, go to one tab page
+            //++when add config name for selected browser - load config into combobox
+            //MessageBox.Show("All tabs deleted.", "Deletion Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+         }
+         else if (cmbSelectedConfigName.Items.Count == 0)
+         {
+            MessageBox.Show("No config name selected.");
+         }
+      }
+
+      private void btnDeleteThisConfig_Click(object sender, EventArgs e)
+      {
+         if (cmbSelectedConfigName.Items.Count == 0)
+         {
+            MessageBox.Show("No config name selected.");
+            return;
+         }
+
+         DialogResult result = MessageBox.Show(
+                       $"Really delete this config?",
+                       "Config name deletion",
+                       MessageBoxButtons.YesNo,
+                       MessageBoxIcon.Question
+                     );
+         if (result == DialogResult.No)
+         {
+            return; // User chose not to delete this config
+         }
+         //delete this config - from db, sample file
+         string selectedBrowser = cmbSelectedBrowser.SelectedItem.ToString().Replace("default:", string.Empty).Trim();
+         string configName = cmbSelectedConfigName.SelectedItem.ToString();
+         string sampleHash = DB_Access.GetImageRecognitionConfigSampleHash(selectedBrowser, configName);
+         //delete sample file
+         string dir = Path.Combine(Application.StartupPath, "Samples");
+         string file = Path.Combine(dir, $"Sample_{sampleHash}.png");
+         if (File.Exists(file))
+         {
+            File.Delete(file);
+         }
+         //delete from db
+         DB_Access.DeleteImageRecognitionConfig(selectedBrowser, configName);
+
+         //refresh config names list
+         cmbSelectedConfigName.Items.Clear();
+         cmbSelectedConfigName.Items.AddRange(DB_Access.LoadBrowserConfigNames(selectedBrowser).ToArray());
+         if (cmbSelectedConfigName.Items.Count > 0)
+         {
+            cmbSelectedConfigName.SelectedIndex = 0;
+         }
       }
 
 

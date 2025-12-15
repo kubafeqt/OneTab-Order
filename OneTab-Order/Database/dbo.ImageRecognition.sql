@@ -3,7 +3,7 @@
     [RecognitionId]     INT           IDENTITY (1, 1) NOT NULL, 
     -- Cizí klíč ukazující na prohlížeč
     [BrowserId]         INT           NOT NULL,
-	 [ConfigName]        VARCHAR(50)   NOT NULL, -- Např. '4K', 'Notebook', 'Full HD'
+	 [ConfigName]        NVARCHAR(128) NOT NULL, -- Např. '4K', 'Notebook', 'Full HD'
     [SampleHash]        VARCHAR (64)  NOT NULL,
     [ScreenStartX]      INT           NOT NULL,
     [ScreenStartY]      INT           NOT NULL,

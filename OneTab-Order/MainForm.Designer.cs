@@ -1,6 +1,6 @@
 ﻿namespace OneTab_Order
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -58,6 +58,12 @@
          btnOpenSavedFolder = new Button();
          panelMain = new Panel();
          panelRPASettings = new Panel();
+         btnDeleteThisConfig = new Button();
+         btnDeleteAllTabs = new Button();
+         cmbSelectedConfigName = new ComboBox();
+         lbSelectBrowserConfigName = new Label();
+         tbConfigName = new TextBox();
+         lbSetConfigName = new Label();
          btnOpenSamplesFolder = new Button();
          btnConnectionTest = new Button();
          btnGetSamples = new Button();
@@ -417,6 +423,12 @@
          // 
          // panelRPASettings
          // 
+         panelRPASettings.Controls.Add(btnDeleteThisConfig);
+         panelRPASettings.Controls.Add(btnDeleteAllTabs);
+         panelRPASettings.Controls.Add(cmbSelectedConfigName);
+         panelRPASettings.Controls.Add(lbSelectBrowserConfigName);
+         panelRPASettings.Controls.Add(tbConfigName);
+         panelRPASettings.Controls.Add(lbSetConfigName);
          panelRPASettings.Controls.Add(btnOpenSamplesFolder);
          panelRPASettings.Controls.Add(btnConnectionTest);
          panelRPASettings.Controls.Add(btnGetSamples);
@@ -431,6 +443,65 @@
          panelRPASettings.Name = "panelRPASettings";
          panelRPASettings.Size = new Size(1181, 702);
          panelRPASettings.TabIndex = 30;
+         // 
+         // btnDeleteThisConfig
+         // 
+         btnDeleteThisConfig.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+         btnDeleteThisConfig.Location = new Point(267, 105);
+         btnDeleteThisConfig.Name = "btnDeleteThisConfig";
+         btnDeleteThisConfig.Size = new Size(183, 31);
+         btnDeleteThisConfig.TabIndex = 14;
+         btnDeleteThisConfig.Text = "Delete this config";
+         btnDeleteThisConfig.UseVisualStyleBackColor = true;
+         btnDeleteThisConfig.Click += btnDeleteThisConfig_Click;
+         // 
+         // btnDeleteAllTabs
+         // 
+         btnDeleteAllTabs.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+         btnDeleteAllTabs.Location = new Point(457, 78);
+         btnDeleteAllTabs.Name = "btnDeleteAllTabs";
+         btnDeleteAllTabs.Size = new Size(75, 47);
+         btnDeleteAllTabs.TabIndex = 13;
+         btnDeleteAllTabs.Text = "Delete all tabs";
+         btnDeleteAllTabs.UseVisualStyleBackColor = true;
+         btnDeleteAllTabs.Click += btnDeleteAllTabs_Click;
+         // 
+         // cmbSelectedConfigName
+         // 
+         cmbSelectedConfigName.DropDownStyle = ComboBoxStyle.DropDownList;
+         cmbSelectedConfigName.FormattingEnabled = true;
+         cmbSelectedConfigName.Location = new Point(165, 79);
+         cmbSelectedConfigName.Name = "cmbSelectedConfigName";
+         cmbSelectedConfigName.Size = new Size(285, 23);
+         cmbSelectedConfigName.TabIndex = 11;
+         // 
+         // lbSelectBrowserConfigName
+         // 
+         lbSelectBrowserConfigName.AutoSize = true;
+         lbSelectBrowserConfigName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         lbSelectBrowserConfigName.Location = new Point(15, 81);
+         lbSelectBrowserConfigName.Name = "lbSelectBrowserConfigName";
+         lbSelectBrowserConfigName.Size = new Size(144, 17);
+         lbSelectBrowserConfigName.TabIndex = 12;
+         lbSelectBrowserConfigName.Text = "Selected config name:";
+         // 
+         // tbConfigName
+         // 
+         tbConfigName.Location = new Point(132, 148);
+         tbConfigName.Name = "tbConfigName";
+         tbConfigName.Size = new Size(285, 23);
+         tbConfigName.TabIndex = 11;
+         tbConfigName.TextAlign = HorizontalAlignment.Center;
+         // 
+         // lbSetConfigName
+         // 
+         lbSetConfigName.AutoSize = true;
+         lbSetConfigName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+         lbSetConfigName.Location = new Point(14, 149);
+         lbSetConfigName.Name = "lbSetConfigName";
+         lbSetConfigName.Size = new Size(112, 17);
+         lbSetConfigName.TabIndex = 10;
+         lbSetConfigName.Text = "Set config name:";
          // 
          // btnOpenSamplesFolder
          // 
@@ -457,7 +528,7 @@
          // btnGetSamples
          // 
          btnGetSamples.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-         btnGetSamples.Location = new Point(101, 98);
+         btnGetSamples.Location = new Point(432, 145);
          btnGetSamples.Name = "btnGetSamples";
          btnGetSamples.Size = new Size(100, 26);
          btnGetSamples.TabIndex = 7;
@@ -559,7 +630,7 @@
          btnRPASettings.UseVisualStyleBackColor = true;
          btnRPASettings.Click += btnRPASettings_Click;
          // 
-         // Form1
+         // MainForm
          // 
          AutoScaleDimensions = new SizeF(7F, 15F);
          AutoScaleMode = AutoScaleMode.Font;
@@ -570,7 +641,7 @@
          Controls.Add(panelMain);
          FormBorderStyle = FormBorderStyle.FixedSingle;
          MaximizeBox = false;
-         Name = "Form1";
+         Name = "MainForm";
          Text = "OneTab order";
          Paint += Form1_Paint;
          KeyDown += Form1_KeyDown;
@@ -627,5 +698,11 @@
       private Button btnGetSamples;
       private Button btnConnectionTest;
       private Button btnOpenSamplesFolder;
+      private TextBox tbConfigName;
+      private Label lbSetConfigName;
+      private ComboBox cmbSelectedConfigName;
+      private Label lbSelectBrowserConfigName;
+      private Button btnDeleteAllTabs;
+      private Button btnDeleteThisConfig;
    }
 }
