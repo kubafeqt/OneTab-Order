@@ -61,7 +61,9 @@ namespace OneTab_Order
          cmbFindType.Items.AddRange(new string[] { "full line", "url only", "content only" });
          cmbFindType.SelectedIndex = 0;
 
-         rtbText.DetectUrls = false; //disable auto url detection
+         cmbSelectedConfigName.Sorted = true;
+
+rtbText.DetectUrls = false; //disable auto url detection
 
          LoadPanelsSizeAndLocation();
          SwitchPanelVisible(panelMain);
@@ -1167,8 +1169,10 @@ namespace OneTab_Order
 
             string selectedBrowser = cmbSelectedBrowser.SelectedItem.ToString().Replace("default:", string.Empty).Trim();
             //entries.Add((lastRefRect, PointToScreen(searchStart.Value), hash, tbConfigName.Text)); //for save to db
-            DB_Access.SaveImageRecognitionConfig(lastRefRect, PointToScreen(searchStart.Value), hash, tbConfigName.Text,
-               selectedBrowser);
+            DB_Access.SaveImageRecognitionConfig(lastRefRect, PointToScreen(searchStart.Value), hash, tbConfigName.Text, selectedBrowser);
+            cmbSelectedConfigName.Items.Add(tbConfigName.Text);
+            cmbSelectedConfigName.SelectedItem = tbConfigName.Text;
+
 
             // reset a návrat do původního stavu
             //firstRef = secondRef = firstSample = secondSample = searchStart = null;
@@ -1235,9 +1239,16 @@ namespace OneTab_Order
 
       private void btnGetSamples_Click(object sender, EventArgs e)
       {
-         if (string.IsNullOrWhiteSpace(tbConfigName.Text))
+         string configName = tbConfigName.Text.Trim();
+         if (string.IsNullOrWhiteSpace(configName))
          {
             MessageBox.Show("Zadej config name.", "Enter config name");
+            return;
+         }
+
+         if (cmbSelectedConfigName.Items.Cast<string>().Any(item => string.Equals(item, configName, StringComparison.OrdinalIgnoreCase)))
+         {
+            MessageBox.Show("Config name již existuje.", "Zadej jiný config name.");
             return;
          }
 
@@ -1275,6 +1286,12 @@ namespace OneTab_Order
 
          // vykreslení „téměř průhledného“ pozadí (alfa = 1)
          PaintLayeredForm();
+
+
+
+
+
+
 
       }
 
@@ -1598,6 +1615,9 @@ namespace OneTab_Order
          }
       }
 
+      private void cmbSelectedConfigName_SelectedIndexChanged(object sender, EventArgs e)
+      {
 
+      }
    }
 }

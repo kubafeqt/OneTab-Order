@@ -474,6 +474,7 @@
          cmbSelectedConfigName.Name = "cmbSelectedConfigName";
          cmbSelectedConfigName.Size = new Size(285, 23);
          cmbSelectedConfigName.TabIndex = 11;
+         cmbSelectedConfigName.SelectedIndexChanged += cmbSelectedConfigName_SelectedIndexChanged;
          // 
          // lbSelectBrowserConfigName
          // 
