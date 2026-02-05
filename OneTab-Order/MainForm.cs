@@ -1360,7 +1360,7 @@ rtbText.DetectUrls = false; //disable auto url detection
          {
             // průhledné pozadí (alfa=1 -> zachytí myš)
             g.Clear(Color.FromArgb(1, 0, 0, 0));
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            //g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
             // --- vykreslíme již uložené páry (v client souřadnicích) ---
             //using (var penSavedRef = new Pen(Color.FromArgb(200, Color.Lime), 2))
