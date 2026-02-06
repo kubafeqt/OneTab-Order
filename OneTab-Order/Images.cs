@@ -32,9 +32,9 @@ namespace OneTab_Order
             int maxX = screen.Width - Sample.Width;
             int maxY = screen.Height - Sample.Height;
 
-            string dir = Path.Combine(Application.StartupPath, "Samples");
-            string screenPath = Path.Combine(dir, $"screen.png");
-            screen.Save(screenPath);
+            //string dir = Path.Combine(Application.StartupPath, "Samples");
+            //string screenPath = Path.Combine(dir, $"screen.png");
+            //screen.Save(screenPath);
 
             for (int x = 0; x < maxX; x++)
             {
