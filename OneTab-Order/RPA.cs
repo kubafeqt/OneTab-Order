@@ -24,7 +24,7 @@ namespace OneTab_Order
             // Najdi první odpovídající sample
             foreach (var img in imgs)
             {
-               var point = img.SearchSample();
+               var point = img.SearchSampleFast();
                if (point != null)
                {
                   foundPoint = point;
@@ -36,7 +36,7 @@ namespace OneTab_Order
             // Nic nenalezeno → konec
             if (foundPoint == null || foundImage == null)
             {
-               MessageBox.Show("Žádný další sample nenalezen!");
+               MessageBox.Show("No further matches detected!");
                break;
             }
 
@@ -46,9 +46,9 @@ namespace OneTab_Order
                 foundPoint.Value.Y + foundImage.ScreenStart.Y);
 
             MouseHandle.LeftClickAtPoint(clickPoint);
-            Thread.Sleep(300);
+            Thread.Sleep(80);
             SendKeys.SendWait("{ENTER}");
-            Thread.Sleep(200);
+            Thread.Sleep(60);
          }
       }
 

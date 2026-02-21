@@ -14,7 +14,7 @@ using System.Text;
 ///new to-do:
 //done: multiple image recognition, save all samples to Samples table in DB
 //stop image recognition and RPA actions by any keyboard key
-//image recognition by Marshal, not by .GetPixel
+//done: image recognition by Marshal, not by .GetPixel
 //image recognition on second display - advanced: check if it is possible to detect which display is main and which is secondary, then save coordinates for both displays, then check where the browser window is (on which display) and search for sample on that display
 //text recognition from description defined in urls, not only url match
 //save onetab lists in software to db and show them in richtextbox selected by combobox, with their creation date and number of tabs
