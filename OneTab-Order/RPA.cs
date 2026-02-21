@@ -13,20 +13,42 @@ namespace OneTab_Order
       /// checkovat image jestli je na obrazovce
       /// pokud ano tak kliknout na to místo - ovládat myš
       /// </summary>
-      /// <param name="img"></param>
-      public static void DeleteAllTabsInBrowser(Images img)
+      /// <param name="imgs"></param>
+      public static void DeleteAllTabsInBrowser(List<Images> imgs)
       {
-         Point? foundPoint = img.SearchSample();
-         while (foundPoint != null)
+         while (true)
          {
-            //kliknout na to místo
-            Point clickPoint = new Point(foundPoint.Value.X + img.ScreenStart.X, foundPoint.Value.Y + img.ScreenStart.Y);
+            Point? foundPoint = null;
+            Images? foundImage = null;
+
+            // Najdi první odpovídající sample
+            foreach (var img in imgs)
+            {
+               var point = img.SearchSample();
+               if (point != null)
+               {
+                  foundPoint = point;
+                  foundImage = img;
+                  break; // důležité!
+               }
+            }
+
+            // Nic nenalezeno → konec
+            if (foundPoint == null || foundImage == null)
+            {
+               MessageBox.Show("Žádný další sample nenalezen!");
+               break;
+            }
+
+            // Kliknout
+            Point clickPoint = new Point(
+                foundPoint.Value.X + foundImage.ScreenStart.X,
+                foundPoint.Value.Y + foundImage.ScreenStart.Y);
+
             MouseHandle.LeftClickAtPoint(clickPoint);
-            Thread.Sleep(50);
+            Thread.Sleep(300);
             SendKeys.SendWait("{ENTER}");
             Thread.Sleep(200);
-            //znovu hledat
-            foundPoint = img.SearchSample();
          }
       }
 

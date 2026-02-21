@@ -4,35 +4,36 @@ using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
-using static System.Windows.Forms.LinkLabel;
 
 #region comments
 
-//
-//Jak z tohoto vytáhnout ty data pro hledání sample na screenshotu? - zadání.
+///new to-do:
+//done: multiple image recognition, save all samples to Samples table in DB
+//stop image recognition and RPA actions by any keyboard key
+//image recognition by Marshal, not by .GetPixel
+//image recognition on second display - advanced: check if it is possible to detect which display is main and which is secondary, then save coordinates for both displays, then check where the browser window is (on which display) and search for sample on that display
+//text recognition from description defined in urls, not only url match
+//save onetab lists in software to db and show them in richtextbox selected by combobox, with their creation date and number of tabs
 //
 
-
-///posibilities to do:
-//check for installed -> notepad++, pspad, ... , or notepad -> basic now (just notepad)
-//can be extracted to txt, html with <a href=""> (+list for copy) -> basic now (txt)
-//remove duplicates from extracted, even in rtbText -> working
-//searching - builded in finder - get shortcut ctrl+f -> top now
-//delete all from and after - &/?pp=, &/?utm, &/?fbclid, - check other tracking queries -> remove tracking queries checkbox -> basic now (?/$something=)
-//get samples - phase 4: enter: same as samplestart, any phase: backspace: back to previous phase
-//
-//todo:
-//image detection - marshal, then RPA like action -> check any sample is there - mouseleftclick, enter - till end (delete all tabs)
-//save settings to db or file (json, xml, ini, ...)
+///older posibilities to do:
+//progress: check for installed -> notepad++, pspad, ... , or notepad -> basic now (just notepad)
+//progress: can be extracted to txt, html with <a href=""> (+list for copy) -> basic now (txt)
+//done: remove duplicates from extracted, even in rtbText
+//done: searching - builded in finder - get shortcut ctrl+f
+//done: delete all from and after - &/?pp=, &/?utm, &/?fbclid, - check other tracking queries -> remove tracking queries checkbox -> (?/$something=)
+//done: get samples - phase 4: enter: same as samplestart, any phase: backspace: back to previous phase
+//progress: image detection - marshal
+//done: then RPA like action -> check any sample is there - mouseleftclick, enter - till end (delete all tabs)
+//progress: save settings to db or file (json, xml, ini, ...)
 //
 //db:
-//save browser and image detection to db
-//create object of image detection from db
-//delete previous sample (loaded hash from db), after creating new one
-//
+//done: save browser and image detection to db
+//done: create object of image detection from db
 //
 //
 
@@ -63,7 +64,7 @@ namespace OneTab_Order
 
          cmbSelectedConfigName.Sorted = true;
 
-rtbText.DetectUrls = false; //disable auto url detection
+         rtbText.DetectUrls = false; //disable auto url detection
 
          LoadPanelsSizeAndLocation();
          SwitchPanelVisible(panelMain);
@@ -188,6 +189,7 @@ rtbText.DetectUrls = false; //disable auto url detection
             }
          }
 
+         lbExtractedWebpages.Text = $"Exported webpages: 0";
          lbRemovedDuplicates.Text = $"Removed duplicates: {Tabs.removedDuplicates}";
       }
 
@@ -1072,11 +1074,15 @@ rtbText.DetectUrls = false; //disable auto url detection
             switch (clickPhase)
             {
                case 0: // první bod REF
+                  if (currentMode == SampleMode.AddSampleOnly)
+                     return;
                   firstRef = e.Location;
                   clickPhase = 1;
                   break;
 
                case 1: // druhý bod REF
+                  if (currentMode == SampleMode.AddSampleOnly)
+                     return;
                   secondRef = e.Location;
                   clickPhase = 2;
                   break;
@@ -1169,10 +1175,23 @@ rtbText.DetectUrls = false; //disable auto url detection
 
             string selectedBrowser = cmbSelectedBrowser.SelectedItem.ToString().Replace("default:", string.Empty).Trim();
             //entries.Add((lastRefRect, PointToScreen(searchStart.Value), hash, tbConfigName.Text)); //for save to db
-            DB_Access.SaveImageRecognitionConfig(lastRefRect, PointToScreen(searchStart.Value), hash, tbConfigName.Text, selectedBrowser);
-            cmbSelectedConfigName.Items.Add(tbConfigName.Text);
-            cmbSelectedConfigName.SelectedItem = tbConfigName.Text;
 
+
+            if (currentMode == SampleMode.NewConfig)
+            {
+               DB_Access.SaveImageRecognitionConfig(lastRefRect, PointToScreen(searchStart.Value), hash, tbConfigName.Text, selectedBrowser);
+
+            }
+            else
+            {
+               DB_Access.AddSampleToConfig(tbConfigName.Text.Trim(), hash, selectedBrowser);
+            }
+
+            if (!cmbSelectedConfigName.Items.Contains(tbConfigName.Text))
+            {
+               cmbSelectedConfigName.Items.Add(tbConfigName.Text);
+               cmbSelectedConfigName.SelectedItem = tbConfigName.Text;
+            }
 
             // reset a návrat do původního stavu
             //firstRef = secondRef = firstSample = secondSample = searchStart = null;
@@ -1237,35 +1256,62 @@ rtbText.DetectUrls = false; //disable auto url detection
          }
       }
 
+      enum SampleMode
+      {
+         NewConfig,        // celý proces 1–5
+         AddSampleOnly     // jen výběr SAMPLE (fáze 3)
+      }
+
+      private SampleMode currentMode;
+
       private void btnGetSamples_Click(object sender, EventArgs e)
       {
          string configName = tbConfigName.Text.Trim();
+         string browserName = cmbSelectedBrowser.SelectedItem.ToString().Replace("default:", string.Empty).Trim();
          if (string.IsNullOrWhiteSpace(configName))
          {
             MessageBox.Show("Zadej config name.", "Enter config name");
             return;
          }
 
-         if (cmbSelectedConfigName.Items.Cast<string>().Any(item => string.Equals(item, configName, StringComparison.OrdinalIgnoreCase)))
+         bool configExist = cmbSelectedConfigName.Items.Cast<string>().Any(item => string.Equals(item, configName, StringComparison.OrdinalIgnoreCase));
+         if (configExist) //save another sample
          {
-            MessageBox.Show("Config name již existuje.", "Zadej jiný config name.");
-            return;
+            currentMode = SampleMode.AddSampleOnly;
+
+            // ⬇ tady si NAČTEŠ uložený REF + SEARCH z DB
+            var data = DB_Access.LoadConfig(configName, browserName);
+
+            firstRef = data.ScreenStart;
+            secondRef = data.ScreenEnd;
+            searchStart = PointToClient(data.SearchStartScreen);
+
+            clickPhase = 2; // připraven rovnou na SAMPLE
+
+
+            //MessageBox.Show("Config name již existuje.", "Zadej jiný config name.");
+            //return;
+         }
+         else
+         {
+            currentMode = SampleMode.NewConfig;
+            clickPhase = 0; // celý proces
          }
 
-         //when config name exist for selected browser - update - ask if update
-         if (DB_Access.ConfigNameExist(cmbSelectedBrowser.SelectedItem.ToString(), tbConfigName.Text))
-         {
-            DialogResult result = MessageBox.Show(
-         $"The configuration already exists.\nDo you want to overwrite it?",
-         "Configuration Exists",
-         MessageBoxButtons.YesNo,
-         MessageBoxIcon.Question
-     );
-            if (result == DialogResult.No)
-            {
-               return; // User chose not to overwrite
-            }
-         }
+         //    //when config name exist for selected browser - update - ask if update
+         //    if (DB_Access.ConfigNameExist(cmbSelectedBrowser.SelectedItem.ToString(), tbConfigName.Text))
+         //    {
+         //       DialogResult result = MessageBox.Show(
+         //    $"The configuration already exists.\nDo you want to overwrite it?",
+         //    "Configuration Exists",
+         //    MessageBoxButtons.YesNo,
+         //    MessageBoxIcon.Question
+         //);
+         //       if (result == DialogResult.No)
+         //       {
+         //          return; // User chose not to overwrite
+         //       }
+         //    }
 
          SwitchPanelVisible(null);
 
@@ -1458,15 +1504,17 @@ rtbText.DetectUrls = false; //disable auto url detection
                }
 
                // --- Stavová nápověda v rohu ---
-               string phaseText = clickPhase switch
-               {
-                  0 => "Krok 1: Klikni pro začátek Screenshot oblasti",
-                  1 => "Krok 2: Klikni pro konec Screenshot oblasti",
-                  2 => "Krok 3: Klikni pro začátek SAMPLE oblasti",
-                  3 => "Krok 4: Klikni pro konec SAMPLE oblasti",
-                  4 => "Krok 5: Klikni pro Start SEARCH bod",
-                  _ => ""
-               };
+               string phaseText = currentMode == SampleMode.AddSampleOnly
+                     ? "Vyber SAMPLE oblast pro existující konfiguraci"
+                     : clickPhase switch
+                     {
+                        0 => "Krok 1: Klikni pro začátek Screenshot oblasti",
+                        1 => "Krok 2: Klikni pro konec Screenshot oblasti",
+                        2 => "Krok 3: Klikni pro začátek SAMPLE oblasti",
+                        3 => "Krok 4: Klikni pro konec SAMPLE oblasti",
+                        4 => "Krok 5: Klikni pro Start SEARCH bod",
+                        _ => ""
+                     };
                if (!string.IsNullOrEmpty(phaseText))
                {
                   var shadowBrush = new SolidBrush(Color.FromArgb(180, 0, 0, 0));
@@ -1561,9 +1609,12 @@ rtbText.DetectUrls = false; //disable auto url detection
          ) == DialogResult.Yes)
          {
             string selectedConfigName = cmbSelectedConfigName.SelectedItem.ToString();
-            (Rectangle refRect, Point startSearch, string sampleHash) = DB_Access.LoadImageRecognitionConfig(selectedBrowser, selectedConfigName);
-            Images img = new Images(new(refRect.X, refRect.Y), new(refRect.X + refRect.Width, refRect.Y + refRect.Height), startSearch, sampleHash);
-            RPA.DeleteAllTabsInBrowser(img); //need to be debugged -> imgs
+            List<(Rectangle refRect, Point startSearch, string sampleHash)> imgsData = DB_Access.LoadImageRecognitionConfig(selectedBrowser, selectedConfigName);
+            List<Images> imgs = imgsData.Select(x => new Images(new Point(x.refRect.X, x.refRect.Y), 
+               new Point(x.refRect.X + x.refRect.Width, x.refRect.Y + x.refRect.Height),
+               x.startSearch,
+               x.sampleHash)).ToList();
+            RPA.DeleteAllTabsInBrowser(imgs);
             //++open browser logic, go to one tab page
             //++when add config name for selected browser - load config into combobox
             //MessageBox.Show("All tabs deleted.", "Deletion Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -1582,12 +1633,7 @@ rtbText.DetectUrls = false; //disable auto url detection
             return;
          }
 
-         DialogResult result = MessageBox.Show(
-                       $"Really delete this config?",
-                       "Config name deletion",
-                       MessageBoxButtons.YesNo,
-                       MessageBoxIcon.Question
-                     );
+         DialogResult result = MessageBox.Show($"Really delete this config?", "Config name deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
          if (result == DialogResult.No)
          {
             return; // User chose not to delete this config
@@ -1595,13 +1641,16 @@ rtbText.DetectUrls = false; //disable auto url detection
          //delete this config - from db, sample file
          string selectedBrowser = cmbSelectedBrowser.SelectedItem.ToString().Replace("default:", string.Empty).Trim();
          string configName = cmbSelectedConfigName.SelectedItem.ToString();
-         string sampleHash = DB_Access.GetImageRecognitionConfigSampleHash(selectedBrowser, configName);
-         //delete sample file
-         string dir = Path.Combine(Application.StartupPath, "Samples");
-         string file = Path.Combine(dir, $"Sample_{sampleHash}.png");
-         if (File.Exists(file))
+         List<string> sampleHashes = DB_Access.GetImageRecognitionConfigSampleHash(selectedBrowser, configName);
+         //delete sample files
+         foreach (var sampleHash in sampleHashes)
          {
-            File.Delete(file);
+            string dir = Path.Combine(Application.StartupPath, "Samples");
+            string file = Path.Combine(dir, $"Sample_{sampleHash}.png");
+            if (File.Exists(file) && !DeleteFileSafe(file))
+            {
+               return; //Don't continue when files not deleted
+            }
          }
          //delete from db
          DB_Access.DeleteImageRecognitionConfig(selectedBrowser, configName);
@@ -1613,11 +1662,61 @@ rtbText.DetectUrls = false; //disable auto url detection
          {
             cmbSelectedConfigName.SelectedIndex = 0;
          }
+         string configNameText = tbConfigName.Text;
+         tbConfigName.Text = string.Empty; //change "add sample" to "get sample" on button btnGetSamples
+         tbConfigName.Text = configNameText;
+      }
+
+      private bool DeleteFileSafe(string filePath)
+      {
+         const int maxAttempts = 5;
+         const int delayMs = 200;
+
+         for (int i = 0; i < maxAttempts; i++)
+         {
+            try
+            {
+               if (File.Exists(filePath))
+               {
+                  File.Delete(filePath);
+               }
+               return true;
+            }
+            catch (IOException)
+            {
+               Thread.Sleep(delayMs);
+            }
+            catch (UnauthorizedAccessException)
+            {
+               Thread.Sleep(delayMs);
+            }
+         }
+
+         MessageBox.Show($"Soubor nelze smazat (je používán jiným procesem):\n{filePath}");
+         return false;
       }
 
       private void cmbSelectedConfigName_SelectedIndexChanged(object sender, EventArgs e)
       {
-
+         string configName = tbConfigName.Text.Trim();
+         if (configName.Equals(cmbSelectedConfigName.SelectedItem.ToString(), StringComparison.OrdinalIgnoreCase))
+         {
+            btnGetSamples.Text = "Add sample";
+         }
+         if (cmbSelectedConfigName.Items.Cast<string>().Any(item => string.Equals(item, configName, StringComparison.OrdinalIgnoreCase)) || string.IsNullOrWhiteSpace(tbConfigName.Text))
+         {
+            //config name exist in combobox or textbox configName is empty - get text from combobox
+            tbConfigName.Text = cmbSelectedConfigName.SelectedItem.ToString();
+         }
       }
+
+      private void tbConfigName_TextChanged(object sender, EventArgs e)
+      {
+         string configName = tbConfigName.Text.Trim();
+         //config name exist in combobox -
+         btnGetSamples.Text = cmbSelectedConfigName.Items.Cast<string>().Any(item => string.Equals(item, configName, StringComparison.OrdinalIgnoreCase)) ? "Add sample" : "get sample";
+      }
+
+
    }
 }

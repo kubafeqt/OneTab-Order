@@ -41,8 +41,7 @@ namespace OneTab_Order
                for (int y = 0; y < maxY; y++)
                {
                   // Compare the first pixel and then check the whole sample
-                  if (Sample.GetPixel(0, 0) == screen.GetPixel(x, y) &&
-                      IsInnerImage(x, y, Sample, screen))
+                  if (ColorsAreSimilar(Sample.GetPixel(0, 0), screen.GetPixel(x, y)) && IsInnerImage(x, y, Sample, screen))
                   {
                      return new Point(x, y);
                   }
@@ -85,6 +84,13 @@ namespace OneTab_Order
          }
       }
 
+      private bool ColorsAreSimilar(Color sample, Color screen, int tolerance = 5)
+      {
+         return Math.Abs(sample.R - screen.R) <= tolerance &&
+                Math.Abs(sample.G - screen.G) <= tolerance &&
+                Math.Abs(sample.B - screen.B) <= tolerance;
+      }
+
       /// <summary>
       /// Check if sample is inner image of screen, when first pixel is matched
       /// </summary>
@@ -94,9 +100,12 @@ namespace OneTab_Order
          {
             for (int x = 0; x < sample.Width; x++)
             {
-               if (sample.GetPixel(x, y) != screen.GetPixel(left + x, top + y))
+               Color sampleColor = sample.GetPixel(x, y);
+               Color screenColor = screen.GetPixel(left + x, top + y);
+
+               if (!ColorsAreSimilar(sampleColor, screenColor))
                {
-                  return false; //sample is not inner image of screen
+                  return false; // sample is not inner image of screen
                }
             }
          }
@@ -113,8 +122,10 @@ namespace OneTab_Order
       {
          Size size = new Size(endScreen.X - startScreen.X, endScreen.Y - startScreen.Y);
          Bitmap screenshot = new Bitmap(size.Width, size.Height);
-         Graphics gfx = Graphics.FromImage(screenshot);
-         gfx.CopyFromScreen(startScreen.X, startScreen.Y, 0, 0, size);
+         using (Graphics gfx = Graphics.FromImage(screenshot))
+         {
+            gfx.CopyFromScreen(startScreen.X, startScreen.Y, 0, 0, size);
+         }
          return screenshot;
       }
 

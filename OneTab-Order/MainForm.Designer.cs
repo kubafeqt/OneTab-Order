@@ -493,6 +493,7 @@
          tbConfigName.Size = new Size(285, 23);
          tbConfigName.TabIndex = 11;
          tbConfigName.TextAlign = HorizontalAlignment.Center;
+         tbConfigName.TextChanged += tbConfigName_TextChanged;
          // 
          // lbSetConfigName
          // 
@@ -533,7 +534,7 @@
          btnGetSamples.Name = "btnGetSamples";
          btnGetSamples.Size = new Size(100, 26);
          btnGetSamples.TabIndex = 7;
-         btnGetSamples.Text = "get samples";
+         btnGetSamples.Text = "get sample";
          btnGetSamples.UseVisualStyleBackColor = true;
          btnGetSamples.Click += btnGetSamples_Click;
          // 

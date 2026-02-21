@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
 
 namespace OneTab_Order
 {
@@ -184,77 +184,101 @@ namespace OneTab_Order
       {
          using (SqlConnection connection = new SqlConnection(connectionString))
          {
-            try
+            connection.Open();
+
+            using (SqlTransaction transaction = connection.BeginTransaction())
             {
-               connection.Open();
-
-               string sql = @"
-            DECLARE @TargetBrowserId INT;
-            
-            -- 1. Zkusíme najít ID. 
-            SELECT @TargetBrowserId = BrowserId FROM BrowserOneTab WHERE BrowserName = @BrowserName;
-
-            -- 2. KONTROLA: Pokud jsme ID nenašli, nemůžeme pokračovat.
-            IF @TargetBrowserId IS NULL
-            BEGIN
-               -- Vyhodíme chybu, kterou chytíme v C#
-               RAISERROR('Prohlížeč s názvem ""%s"" nebyl v databázi nalezen. Zkontrolujte tabulku BrowserOneTab.', 16, 1, @BrowserName);
-               RETURN;
-            END
-
-            -- 3. Pokud existuje config -> UPDATE
-            IF EXISTS (SELECT 1 FROM ImageRecognition WHERE BrowserId = @TargetBrowserId AND ConfigName = @ConfigName)
-            BEGIN
-                UPDATE ImageRecognition
-                SET 
-                    ScreenStartX = @ScreenStartX,
-                    ScreenStartY = @ScreenStartY,
-                    ScreenWidth = @ScreenWidth,
-                    ScreenHeight = @ScreenHeight,
-                    RecognitionStartX = @RecognitionStartX,
-                    RecognitionStartY = @RecognitionStartY,
-                    SampleHash = @SampleHash
-                WHERE BrowserId = @TargetBrowserId AND ConfigName = @ConfigName;
-            END
-            -- 4. Jinak -> INSERT
-            ELSE
-            BEGIN
-                INSERT INTO ImageRecognition 
-                (
-                    BrowserId, ConfigName, SampleHash,
-                    ScreenStartX, ScreenStartY, ScreenWidth, ScreenHeight,
-                    RecognitionStartX, RecognitionStartY
-                )
-                VALUES 
-                (
-                    @TargetBrowserId, @ConfigName, @SampleHash,
-                    @ScreenStartX, @ScreenStartY, @ScreenWidth, @ScreenHeight,
-                    @RecognitionStartX, @RecognitionStartY
-                );
-            END";
-
-               using (SqlCommand command = new SqlCommand(sql, connection))
+               try
                {
-                  // PŘIDÁNO .Trim() - odstraní případné mezery na začátku/konci, které způsobují neshodu
-                  command.Parameters.AddWithValue("@BrowserName", browserName);
+                  string sql = @"
+                  DECLARE @TargetBrowserId INT;
+                  DECLARE @RecognitionId INT;
 
-                  command.Parameters.AddWithValue("@ConfigName", configName);
-                  command.Parameters.AddWithValue("@ScreenStartX", refRect.X);
-                  command.Parameters.AddWithValue("@ScreenStartY", refRect.Y);
-                  command.Parameters.AddWithValue("@ScreenWidth", refRect.Width);
-                  command.Parameters.AddWithValue("@ScreenHeight", refRect.Height);
-                  command.Parameters.AddWithValue("@RecognitionStartX", searchStart.X);
-                  command.Parameters.AddWithValue("@RecognitionStartY", searchStart.Y);
-                  command.Parameters.AddWithValue("@SampleHash", sampleHash);
+                  -- 1. Najít BrowserId
+                  SELECT @TargetBrowserId = BrowserId
+                  FROM BrowserOneTab
+                  WHERE BrowserName = @BrowserName;
 
-                  command.ExecuteNonQuery();
+                  IF @TargetBrowserId IS NULL
+                  BEGIN
+                      RAISERROR('Prohlížeč s názvem ""%s"" nebyl v databázi nalezen.', 16, 1, @BrowserName);
+                      RETURN;
+                  END
+
+                  -- 2. Existuje config?
+                  SELECT @RecognitionId = RecognitionId
+                  FROM ImageRecognition
+                  WHERE BrowserId = @TargetBrowserId
+                    AND ConfigName = @ConfigName;
+
+                  IF @RecognitionId IS NOT NULL
+                  BEGIN
+                      -- UPDATE
+                      UPDATE ImageRecognition
+                      SET 
+                          ScreenStartX = @ScreenStartX,
+                          ScreenStartY = @ScreenStartY,
+                          ScreenWidth = @ScreenWidth,
+                          ScreenHeight = @ScreenHeight,
+                          RecognitionStartX = @RecognitionStartX,
+                          RecognitionStartY = @RecognitionStartY
+                      WHERE RecognitionId = @RecognitionId;
+                  END
+                  ELSE
+                  BEGIN
+                      -- INSERT
+                      INSERT INTO ImageRecognition
+                      (
+                          BrowserId, ConfigName, SampleHash,
+                          ScreenStartX, ScreenStartY, ScreenWidth, ScreenHeight,
+                          RecognitionStartX, RecognitionStartY
+                      )
+                      VALUES
+                      (
+                          @TargetBrowserId, @ConfigName, @SampleHash,
+                          @ScreenStartX, @ScreenStartY, @ScreenWidth, @ScreenHeight,
+                          @RecognitionStartX, @RecognitionStartY
+                      );
+
+                      SET @RecognitionId = SCOPE_IDENTITY();
+                  END
+
+                  -- 3. Uložit SampleHash do Samples (pokud ještě není)
+                  IF NOT EXISTS
+                  (
+                      SELECT 1
+                      FROM Samples
+                      WHERE RecognitionId = @RecognitionId
+                        AND SampleHash = @SampleHash
+                  )
+                  BEGIN
+                      INSERT INTO Samples (RecognitionId, SampleHash)
+                      VALUES (@RecognitionId, @SampleHash);
+                  END
+                  ";
+
+                  using (SqlCommand command = new SqlCommand(sql, connection, transaction))
+                  {
+                     command.Parameters.AddWithValue("@BrowserName", browserName.Trim());
+                     command.Parameters.AddWithValue("@ConfigName", configName.Trim());
+                     command.Parameters.AddWithValue("@ScreenStartX", refRect.X);
+                     command.Parameters.AddWithValue("@ScreenStartY", refRect.Y);
+                     command.Parameters.AddWithValue("@ScreenWidth", refRect.Width);
+                     command.Parameters.AddWithValue("@ScreenHeight", refRect.Height);
+                     command.Parameters.AddWithValue("@RecognitionStartX", searchStart.X);
+                     command.Parameters.AddWithValue("@RecognitionStartY", searchStart.Y);
+                     command.Parameters.AddWithValue("@SampleHash", sampleHash);
+
+                     command.ExecuteNonQuery();
+                  }
+
+                  transaction.Commit();
                }
-            }
-
-            catch (SqlException ex)
-            {
-               // Pokud SQL vyhodí RAISERROR, zobrazí se text zde
-               MessageBox.Show("Chyba DB: " + ex.Message);
+               catch (Exception ex)
+               {
+                  transaction.Rollback();
+                  MessageBox.Show("Chyba DB: " + ex.Message);
+               }
             }
          }
       }
@@ -265,41 +289,58 @@ namespace OneTab_Order
       /// <param name="selectedBrowser"></param>
       /// <param name="configName"></param>
       /// <returns></returns>
-      public static (Rectangle refRect, Point searchStart, string sampleHash) LoadImageRecognitionConfig(string selectedBrowser, string configName)
+      public static List<(Rectangle refRect, Point searchStart, string sampleHash)>
+     LoadImageRecognitionConfig(string selectedBrowser, string configName)
       {
+         var result = new List<(Rectangle, Point, string)>();
+
          using (SqlConnection connection = new SqlConnection(connectionString))
          {
             try
             {
                connection.Open();
+
                string sql = @"
                 SELECT 
-                    ir.ScreenStartX, ir.ScreenStartY, ir.ScreenWidth, ir.ScreenHeight,
-                    ir.RecognitionStartX, ir.RecognitionStartY,
-                    ir.SampleHash
+                    ir.ScreenStartX,
+                    ir.ScreenStartY,
+                    ir.ScreenWidth,
+                    ir.ScreenHeight,
+                    ir.RecognitionStartX,
+                    ir.RecognitionStartY,
+                    s.SampleHash
                 FROM ImageRecognition ir
-                INNER JOIN BrowserOneTab bot ON ir.BrowserId = bot.BrowserId
-                WHERE bot.BrowserName = @BrowserName AND ir.ConfigName = @ConfigName";
+                INNER JOIN BrowserOneTab bot 
+                    ON ir.BrowserId = bot.BrowserId
+                INNER JOIN Samples s
+                    ON ir.RecognitionId = s.RecognitionId
+                WHERE bot.BrowserName = @BrowserName 
+                  AND ir.ConfigName = @ConfigName";
+
                using (SqlCommand cmd = new SqlCommand(sql, connection))
                {
-                  cmd.Parameters.AddWithValue("@BrowserName", selectedBrowser);
-                  cmd.Parameters.AddWithValue("@ConfigName", configName);
+                  cmd.Parameters.AddWithValue("@BrowserName", selectedBrowser.Trim());
+                  cmd.Parameters.AddWithValue("@ConfigName", configName.Trim());
+
                   using (SqlDataReader reader = cmd.ExecuteReader())
                   {
-                     if (reader.Read())
+                     while (reader.Read())
                      {
                         Rectangle refRect = new Rectangle(
-                           reader.GetInt32(0),
-                           reader.GetInt32(1),
-                           reader.GetInt32(2),
-                           reader.GetInt32(3)
+                            reader.GetInt32(0),
+                            reader.GetInt32(1),
+                            reader.GetInt32(2),
+                            reader.GetInt32(3)
                         );
+
                         Point searchStart = new Point(
-                           reader.GetInt32(4),
-                           reader.GetInt32(5)
+                            reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
+                            reader.IsDBNull(5) ? 0 : reader.GetInt32(5)
                         );
+
                         string sampleHash = reader.GetString(6);
-                        return (refRect, searchStart, sampleHash);
+
+                        result.Add((refRect, searchStart, sampleHash));
                      }
                   }
                }
@@ -309,12 +350,13 @@ namespace OneTab_Order
                MessageBox.Show("Chyba při práci s databází: " + ex.Message);
             }
          }
-         return (Rectangle.Empty, Point.Empty, string.Empty);
+
+         return result;
       }
 
-      public static string GetImageRecognitionConfigSampleHash(string selectedBrowser, string configName)
+      public static List<string> GetImageRecognitionConfigSampleHash(string selectedBrowser, string configName)
       {
-         string sampleHash = null; // Výchozí hodnota, pokud se nic nenajde
+         List<string> sampleHashes = new List<string>();
 
          using (SqlConnection connection = new SqlConnection(connectionString))
          {
@@ -323,10 +365,13 @@ namespace OneTab_Order
                connection.Open();
 
                string query = @"
-                SELECT ir.SampleHash 
+                SELECT s.SampleHash
                 FROM ImageRecognition ir
-                INNER JOIN BrowserOneTab bot ON ir.BrowserId = bot.BrowserId
-                WHERE bot.BrowserName = @BrowserName 
+                INNER JOIN BrowserOneTab bot 
+                    ON ir.BrowserId = bot.BrowserId
+                INNER JOIN Samples s
+                    ON ir.RecognitionId = s.RecognitionId
+                WHERE bot.BrowserName = @BrowserName
                   AND ir.ConfigName = @ConfigName";
 
                using (SqlCommand cmd = new SqlCommand(query, connection))
@@ -334,22 +379,22 @@ namespace OneTab_Order
                   cmd.Parameters.AddWithValue("@BrowserName", selectedBrowser.Trim());
                   cmd.Parameters.AddWithValue("@ConfigName", configName.Trim());
 
-                  // ExecuteScalar vrátí první sloupec prvního řádku (nebo null)
-                  object result = cmd.ExecuteScalar();
-
-                  if (result != null && result != DBNull.Value)
+                  using (SqlDataReader reader = cmd.ExecuteReader())
                   {
-                     sampleHash = result.ToString();
+                     while (reader.Read())
+                     {
+                        sampleHashes.Add(reader.GetString(0));
+                     }
                   }
                }
             }
             catch (SqlException ex)
             {
-               MessageBox.Show("Chyba při načítání hashe: " + ex.Message);
+               MessageBox.Show("Chyba při načítání hashů: " + ex.Message);
             }
          }
 
-         return sampleHash;
+         return sampleHashes;
       }
 
       public static void DeleteImageRecognitionConfig(string selectedBrowser, string configName)
@@ -375,6 +420,92 @@ namespace OneTab_Order
             {
                MessageBox.Show("Chyba při práci s databází: " + ex.Message);
             }
+         }
+      }
+
+      public static ImageRecognitionData LoadConfig(string configName, string browserName)
+      {
+         using (SqlConnection conn = new SqlConnection(connectionString))
+         using (SqlCommand cmd = conn.CreateCommand())
+         {
+            cmd.CommandText = @"
+         SELECT 
+             ir.RecognitionId,
+             ir.ScreenStartX,
+             ir.ScreenStartY,
+             ir.ScreenWidth,
+             ir.ScreenHeight,
+             ir.RecognitionStartX,
+             ir.RecognitionStartY
+         FROM ImageRecognition ir
+         JOIN BrowserOneTab b ON b.BrowserId = ir.BrowserId
+         WHERE ir.ConfigName = @ConfigName
+           AND b.BrowserName = @BrowserName";
+
+            cmd.Parameters.AddWithValue("@ConfigName", configName);
+            cmd.Parameters.AddWithValue("@BrowserName", browserName);
+
+            conn.Open();
+
+            using (SqlDataReader r = cmd.ExecuteReader())
+            {
+               if (!r.Read())
+                  throw new InvalidOperationException("Config not found.");
+
+               int screenStartX = r.GetInt32(r.GetOrdinal("ScreenStartX"));
+               int screenStartY = r.GetInt32(r.GetOrdinal("ScreenStartY"));
+               int screenWidth = r.GetInt32(r.GetOrdinal("ScreenWidth"));
+               int screenHeight = r.GetInt32(r.GetOrdinal("ScreenHeight"));
+
+               int searchX = r.GetInt32(r.GetOrdinal("RecognitionStartX"));
+               int searchY = r.GetInt32(r.GetOrdinal("RecognitionStartY"));
+
+               return new ImageRecognitionData
+               {
+                  RecognitionId = r.GetInt32(r.GetOrdinal("RecognitionId")),
+
+                  ScreenStart = new Point(screenStartX, screenStartY),
+                  ScreenEnd = new Point(screenStartX + screenWidth, screenStartY + screenHeight),
+                  SearchStartScreen = new Point(searchX, searchY)
+               };
+            }
+         }
+      }
+
+      public static void AddSampleToConfig(string configName, string sampleHash, string browserName)
+      {
+         using (SqlConnection conn = new SqlConnection(connectionString))
+         using (SqlCommand cmd = conn.CreateCommand())
+         {
+            conn.Open();
+
+            // Najdi RecognitionId
+            cmd.CommandText = @"
+            SELECT ir.RecognitionId
+            FROM ImageRecognition ir
+            JOIN BrowserOneTab b ON b.BrowserId = ir.BrowserId
+            WHERE ir.ConfigName = @ConfigName
+              AND b.BrowserName = @BrowserName";
+
+            cmd.Parameters.AddWithValue("@ConfigName", configName);
+            cmd.Parameters.AddWithValue("@BrowserName", browserName);
+
+            object result = cmd.ExecuteScalar();
+            if (result == null)
+               throw new InvalidOperationException("Config not found.");
+
+            int recognitionId = (int)result;
+
+            // Vlož sample
+            cmd.Parameters.Clear();
+            cmd.CommandText = @"
+            INSERT INTO Samples (RecognitionId, SampleHash)
+            VALUES (@RecognitionId, @SampleHash)";
+
+            cmd.Parameters.AddWithValue("@RecognitionId", recognitionId);
+            cmd.Parameters.AddWithValue("@SampleHash", sampleHash);
+
+            cmd.ExecuteNonQuery();
          }
       }
 
