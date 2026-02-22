@@ -56,7 +56,7 @@ namespace OneTab_Order
                 foundPoint.Value.Y + foundImage.ScreenStart.Y);
 
             MouseHandle.LeftClickAtPoint(clickPoint);
-            Thread.Sleep(100);
+            Thread.Sleep(150);
             SendKeys.SendWait("{ENTER}");
             Thread.Sleep(100);
          }
