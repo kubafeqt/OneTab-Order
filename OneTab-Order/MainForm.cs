@@ -75,6 +75,14 @@ namespace OneTab_Order
 
          DoubleBuffered = true;
          KeyPreview = true; // formulář zachytí klávesy
+
+         Keyboard._hookID = Keyboard.SetHook(Keyboard._proc);
+      }
+
+      protected override void OnFormClosing(FormClosingEventArgs e)
+      {
+         Keyboard.UnhookWindowsHookEx(Keyboard._hookID);
+         base.OnFormClosing(e);
       }
 
       private void LoadPanelsSizeAndLocation()

@@ -9,6 +9,8 @@ namespace OneTab_Order
 {
    class RPA
    {
+      public static bool ActionInProgress { get; set; } = false;
+
       /// <summary>
       /// checkovat image jestli je na obrazovce
       /// pokud ano tak kliknout na to místo - ovládat myš
@@ -16,8 +18,15 @@ namespace OneTab_Order
       /// <param name="imgs"></param>
       public static void DeleteAllTabsInBrowser(List<Images> imgs)
       {
-         while (true)
+         ActionInProgress = true;
+         while (true) 
          {
+            if (Keyboard.KeyPressed) //when any keyboard key is pressed - stop doing RPA actions
+            {
+               Keyboard.KeyPressed = false;
+               break;
+            }
+
             Point? foundPoint = null;
             Images? foundImage = null;
 
@@ -36,6 +45,7 @@ namespace OneTab_Order
             // Nic nenalezeno → konec
             if (foundPoint == null || foundImage == null)
             {
+               ActionInProgress = false;
                MessageBox.Show("No further matches detected!");
                break;
             }
